@@ -1,0 +1,215 @@
+
+*:focus {
+    outline: none !important;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+    padding-bottom: 55px;
+    box-sizing: border-box;
+}
+
+body {
+    background-image: url(/background.jpg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    line-height: 1.6;
+    margin-top: 82px;
+}
+
+i {
+    margin-right: 10px;
+}
+
+li {
+    margin-bottom: 3px;
+}
+li:last-of-type {
+    margin-bottom: 0;
+}
+
+pre {
+    padding: 1.75em 1.5em;
+    border: 3px solid #ccc;
+    color: #f8f8f2;
+    text-shadow: 0 1px #1a1a1a;
+    background: #2b2a43eb;
+    font-size: 13px;
+    font-family: "Menlo", "Consolas", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", monospace;
+}
+
+table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+table tbody {
+    display: table;
+    width: 100%;
+}
+
+h2.card-header {
+    font-size: 1rem;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand img {
+    height: 33px;
+    margin-right: 7px;
+}
+
+@media (max-width: 450px) {
+    .navbar-brand {
+        font-size: 14.7px !important;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 380px) {
+    .navbar-brand img {
+        height: 20px;
+    }
+    .navbar-brand {
+        font-size: 13px !important;
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    .navbar-expand-md .navbar-nav .nav-link {
+        padding-right: .7rem;
+        padding-left: .7rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .navbar-expand-md .navbar-nav .nav-link {
+        padding-right: .7rem;
+        padding-left: .7rem;
+    }
+}
+
+@media (max-width: 1199px) {
+    .navbar-brand {
+        font-size: 18px;
+    }
+    .navbar-expand-md .navbar-nav .nav-link {
+        padding-right: .5rem;
+        padding-left: .5rem;
+        font-size: 14.8px;
+    }
+}
+
+@media (max-width: 961px) {
+    .navbar-expand-md .navbar-nav .nav-link {
+        padding-right: .7rem;
+        padding-left: .7rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .navbar-expand-md .navbar-toggler {
+        display: block;
+    }
+    .navbar-expand-md .navbar-collapse {
+        display: block !important;
+        -ms-flex-positive: 1;
+        flex-basis: 100%;
+    }
+    .navbar-expand-md .navbar-collapse.collapse:not(.show) {
+        display: none !important;
+    }
+    .navbar-expand-md .navbar-nav {
+        -ms-flex-direction: column;
+        flex-direction: column;
+    }
+}
+
+@media (min-width: 992px) {
+    .navbar-expand-md .navbar-toggler {
+        display: none;
+    }
+    .navbar-expand-md .navbar-collapse {
+        display: -ms-flexbox !important;
+        display: flex !important;
+        -ms-flex-preferred-size: auto;
+        flex-basis: auto;
+    }
+    .navbar-expand-md .navbar-collapse.collapse:not(.show) {
+        display: -ms-flexbox!important;
+        display: flex !important;
+    }
+    .navbar-expand-md .navbar-nav {
+        -ms-flex-direction: row;
+        flex-direction: row;
+    }
+}
+
+.card-body ul {
+    margin-bottom: 5px !important;
+    padding-left: 30px;
+}
+
+a.text-light, a.text-light {
+    transition: background-color .15s cubic-bezier(.4,0,.6,1);
+}
+
+a.text-light:hover, a.text-light:focus {
+    color: #f8f9fa !important;
+}
+
+a.text-light:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+}
+
+#navigation {
+    background: #2399f6 !important;
+    overflow: hidden;
+}
+
+table.table tr:last-of-type {
+    border-bottom: 1px solid #dee2e6;
+}
+
+table > tbody > tr > th{
+    background: #dcf3ff;
+}
+
+@media (min-width: 1200px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl {
+        max-width: 1150px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    ol.mb-0 {
+        padding-inline-start: 20px;
+    }
+}
+
+.column {
+    border: 1px solid #dee2e6;
+}
+
+.column div {
+    margin: 10px 30px 6px;
+}
+
+.column a{
+    margin-left: 30px;
+}
+
+#footer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
