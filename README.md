@@ -1,3 +1,20 @@
+
+# weather-api
+
+## Setup
+
+1. .env.example を .env にコピーする
+2. .env を環境に合わせて編集する
+3. プロジェクトのディレクトリ内で `composer install` を実行する
+4. Apache の設定で public/ 以下を公開するよう設定する
+5. アクセスできるか確認する
+
+## License
+[MIT License](LICENSE.txt)
+
+
+------------------
+
 <p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
 
 <p align="center">
