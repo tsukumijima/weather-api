@@ -454,7 +454,7 @@
           },
           "image": {
               "title": "曇のち雨",
-              "url": "{{ env('APP_URL') }}/icon/13.gif",
+              "url": "{{ url('/') }}/icon/13.gif",
               "width": 50,
               "height": 31
           }
@@ -481,7 +481,7 @@
           },
           "image": {
               "title": "暴風雨",
-              "url": "{{ env('APP_URL') }}/icon/22.gif",
+              "url": "{{ url('/') }}/icon/22.gif",
               "width": 50,
               "height": 31
           }
@@ -514,13 +514,13 @@
       "prefecture": "福岡県"
   },
   "copyright": {
-      "link": "{{ env('APP_URL') }}/",
+      "link": "{{ url('/') }}/",
       "title": "(C) 天気予報 API（livedoor 天気互換）",
       "image": {
           "width": 120,
           "height": 120,
-          "link": "{{ env('APP_URL') }}/",
-          "url": "{{ env('APP_URL') }}/logo.png",
+          "link": "{{ url('/') }}/",
+          "url": "{{ url('/') }}/logo.png",
           "title": "天気予報 API（livedoor 天気互換）"
       },
       "provider": [
