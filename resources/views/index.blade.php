@@ -81,7 +81,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link text-light" href="#changes-note">
-              <i class="fas fa-exclamation-circle"></i>Changes Note
+              <i class="fas fa-exclamation-circle"></i>Changes Notes
             </a>
           </li>
           <li class="nav-item">
