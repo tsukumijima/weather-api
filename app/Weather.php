@@ -184,8 +184,13 @@ class Weather extends Model
         // 天気概要を抽出
         $weather_description_raw = mb_convert_kana($goutte->filter('pre.textframe')->html(), 'as');
         preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表.*\<b\>.(.*)\<\/b\>.....(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
-        $weather_description_title = str_replace(' ', '', str_replace("\r\n", '', $match2[4])); // 半角スペースを除去
-        $weather_description = $weather_description_title."\n\n".str_replace(' ', '', $match2[5]); // 半角スペースを除去
+        if (!empty($match2)) {
+            $weather_description_title = str_replace(' ', '', str_replace("\r\n", '', $match2[4])); // 半角スペースを除去
+            $weather_description = trim($weather_description_title."\n\n".str_replace(' ', '', $match2[5])); // 半角スペースを除去
+        } else {
+            preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
+            $weather_description = trim(str_replace(' ', '', $match2[4])); // 半角スペースを除去
+        }
 
         // 天気概要から publicTime を取得
         $weather_description_publicTime = date('Y/m/d H:i:s', strtotime(ConvertDate::convertJtGDate($match2[1])." {$match2[2]}:{$match2[3]}:00"));
