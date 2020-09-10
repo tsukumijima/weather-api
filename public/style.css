@@ -159,6 +159,7 @@ h2.card-header {
 
 a.text-light, a.text-light {
     transition: background-color .15s cubic-bezier(.4,0,.6,1);
+    border-radius: 4px;
 }
 
 a.text-light:hover, a.text-light:focus {
@@ -167,7 +168,6 @@ a.text-light:hover, a.text-light:focus {
 
 a.text-light:hover {
     background: rgba(0, 0, 0, 0.08);
-    border-radius: 4px;
 }
 
 #navigation {
