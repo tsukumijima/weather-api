@@ -106,8 +106,8 @@ class Weather extends Model
             // 北海道用
             $jma_id = '3'.str_pad($region_id, 2, 0, STR_PAD_LEFT);
 
-            // $region_id が 0 (存在しない)
-            if (intval($region_id) === 0) {
+            // $region_id が 0 or 8 以上 (存在しない)
+            if (intval($region_id) === 0 or intval($region_id) >= 8) {
                 return [
                     'error' => 'The specified city ID does not exist.'
                 ];
@@ -116,8 +116,8 @@ class Weather extends Model
             // 沖縄用
             $jma_id = '3'.str_pad(52 + $region_id, 2, 0, STR_PAD_LEFT);
 
-            // $region_id が 0 (存在しない)
-            if (intval($region_id) === 0) {
+            // $region_id が 0 or 5 以上 (存在しない)
+            if (intval($region_id) === 0 or intval($region_id) >= 5) {
                 return [
                     'error' => 'The specified city ID does not exist.'
                 ];
