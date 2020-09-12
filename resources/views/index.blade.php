@@ -80,7 +80,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-light" href="#changes-note">
+            <a class="nav-link text-light" href="#changes-notes">
               <i class="fas fa-exclamation-circle"></i>Changes Notes
             </a>
           </li>
@@ -117,7 +117,7 @@
     </div>
   </div>
 
-  <div id="changes-note" class="container mt-4 px-2 px-lg-3">
+  <div id="changes-notes" class="container mt-4 px-2 px-lg-3">
     <div class="card">
       <h2 class="card-header font-weight-bold"><i class="fas fa-exclamation-circle"></i>変更点・注意事項</h2>
       <div class="card-body p-sm-4">
