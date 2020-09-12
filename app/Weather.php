@@ -183,13 +183,13 @@ class Weather extends Model
 
         // 天気概要を抽出
         $weather_description_raw = mb_convert_kana($goutte->filter('pre.textframe')->html(), 'as');
-        preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表.*\<b\>.(.*)\<\/b\>.....(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
+        preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表.*\<b\>.(.*)\<\/b\>(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
         if (!empty($match2)) {
-            $weather_description_title = str_replace(' ', '', str_replace("\r\n", '', $match2[4])); // 半角スペースを除去
-            $weather_description = trim($weather_description_title."\n\n".str_replace(' ', '', $match2[5])); // 半角スペースを除去
+            $weather_description_title = str_replace(' ', '', str_replace("\r\n", '', trim($match2[4]))); // 半角スペースと前後の改行を除去
+            $weather_description = $weather_description_title."\n\n".str_replace(' ', '', trim($match2[5])); // 半角スペースと前後の改行を除去
         } else {
             preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
-            $weather_description = trim(str_replace(' ', '', $match2[4])); // 半角スペースを除去
+            $weather_description = str_replace(' ', '', trim($match2[4])); // 半角スペースと前後の改行を除去
         }
 
         // 天気概要から publicTime を取得
@@ -516,6 +516,15 @@ class Weather extends Model
         }
 
         // json を返す
-        return json_encode($weather_json, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+        $weather_json_encode = json_encode($weather_json, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+
+        if ($weather_json_encode === false) {
+            $weather_json_encode = json_encode(
+                ['error' => 'Failed to output JSON data.'],
+                JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT
+            );
+        }
+
+        return $weather_json_encode;
     }
 }
