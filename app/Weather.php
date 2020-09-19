@@ -15,6 +15,66 @@ class Weather extends Model
         // サイトの URL を取得
         $url = url('/');
 
+        // 都道府県ごとの livedoor 天気と気象庁の ID の対照表
+        $region_id_table = [
+            '0110' => '301', // 北海道（宗谷地方）
+            '0120' => '302', // 北海道（上川・留萌地方）
+            '0130' => '303', // 北海道（網走・北見・紋別地方）
+            '0140' => '304', // 北海道（釧路・根室・十勝地方）
+            '0150' => '305', // 北海道（胆振・日高地方）
+            '0160' => '306', // 北海道（石狩・空知・後志地方）
+            '0170' => '307', // 北海道（渡島・檜山地方）
+            '0200' => '308', // 青森県
+            '0300' => '310', // 岩手県
+            '0400' => '312', // 宮城県
+            '0500' => '309', // 秋田県
+            '0600' => '311', // 山形県
+            '0700' => '313', // 福島県
+            '0800' => '314', // 茨城県
+            '0900' => '316', // 栃木県
+            '1000' => '315', // 群馬県
+            '1100' => '317', // 埼玉県
+            '1200' => '318', // 千葉県
+            '1300' => '319', // 東京都
+            '1400' => '320', // 神奈川県
+            '1500' => '323', // 新潟県
+            '1600' => '324', // 富山県
+            '1700' => '325', // 石川県
+            '1800' => '326', // 福井県
+            '1900' => '321', // 山梨県
+            '2000' => '322', // 長野県
+            '2100' => '328', // 岐阜県
+            '2200' => '327', // 静岡県
+            '2300' => '329', // 愛知県
+            '2400' => '330', // 三重県
+            '2500' => '334', // 滋賀県
+            '2600' => '333', // 京都府
+            '2700' => '331', // 大阪府
+            '2800' => '332', // 兵庫県
+            '2900' => '335', // 奈良県
+            '3000' => '336', // 和歌山県
+            '3100' => '339', // 鳥取県
+            '3200' => '337', // 島根県
+            '3300' => '340', // 岡山県
+            '3400' => '338', // 広島県
+            '3500' => '345', // 山口県
+            '3600' => '343', // 徳島県
+            '3700' => '341', // 香川県
+            '3800' => '342', // 愛媛県
+            '3900' => '344', // 高知県
+            '4000' => '346', // 福岡県
+            '4100' => '347', // 佐賀県
+            '4200' => '348', // 長崎県
+            '4300' => '349', // 熊本県
+            '4400' => '350', // 大分県
+            '4500' => '351', // 宮崎県
+            '4600' => '352', // 鹿児島県
+            '4710' => '353', // 沖縄県（沖縄本島地方）
+            '4720' => '354', // 沖縄県（大東島地方）
+            '4730' => '355', // 沖縄県（宮古島地方）
+            '4740' => '356', // 沖縄県（八重山地方）
+        ];
+
         // 天気画像
         $weather_image = [
             '晴れ' => "{$url}/icon/1.gif",
@@ -98,41 +158,16 @@ class Weather extends Model
 
         // ID
         $prefecture_id = substr($id, 0, 2);
-        $region_id = substr($id, 2, 1);
+        $region_id = substr($id, 0, 4);
         $city_id = substr($id, 4, 1);
 
         // 気象庁 HP の ID を算出
-        if (intval($prefecture_id) === 1) {
-            // 北海道用
-            $jma_id = '3'.str_pad($region_id, 2, 0, STR_PAD_LEFT);
-
-            // $region_id が 0 or 8 以上 (存在しない)
-            if (intval($region_id) === 0 or intval($region_id) >= 8) {
-                return [
-                    'error' => 'The specified city ID does not exist.'
-                ];
-            }
-        } else if (intval($prefecture_id) === 47) {
-            // 沖縄用
-            $jma_id = '3'.str_pad(52 + $region_id, 2, 0, STR_PAD_LEFT);
-
-            // $region_id が 0 or 5 以上 (存在しない)
-            if (intval($region_id) === 0 or intval($region_id) >= 5) {
-                return [
-                    'error' => 'The specified city ID does not exist.'
-                ];
-            }
-        } else {
-            // それ以外の都府県
-            // 北海道分のインデックスを足す
-            $jma_id = '3'.str_pad($prefecture_id + 6, 2, 0, STR_PAD_LEFT);
-
-            // 北海道以外なのに $region_id が 0 以外
-            if (intval($region_id) != 0) {
-                return [
-                    'error' => 'The specified city ID does not exist.'
-                ];
-            }
+        if (isset($region_id_table[strval($region_id)])) {
+            $jma_id = strval($region_id_table[$region_id]);
+        } else { // 存在しない ID
+            return [
+                'error' => 'The specified city ID does not exist.'
+            ];
         }
 
 
@@ -144,16 +179,32 @@ class Weather extends Model
 
         // table から必要な element を抽出
         $weather_table = $goutte->filter('table#forecasttablefont > tr');
-        $weather = [
-            /*
-                table の tr 要素は地域ごとに4つ使われるので、$city_id が 1 ならインデックスが 0～3 の tr 要素を、
-                $city_id が 2 ならインデックスが 4～7 要素の tr を… といった具合で取得できるようにしている
-            */
-            $weather_table->eq(0 + (($city_id - 1) * 4)), // 表のヘッダー
-            $weather_table->eq(1 + (($city_id - 1) * 4)), // 今日の天気 
-            $weather_table->eq(2 + (($city_id - 1) * 4)), // 明日の天気
-            $weather_table->eq(3 + (($city_id - 1) * 4)), // 明後日の天気
-        ];
+        
+        /*
+            table の tr 要素は地域ごとに4つ使われるので、$city_id が 1 ならインデックスが 0～3 の tr 要素を、
+            $city_id が 2 ならインデックスが 4～7 要素の tr を… といった具合で取得できるようにしている
+        */
+        // 観測地点が 1 箇所しかない 北海道（宗谷地方）・大阪府・香川県・沖縄県（大東島地方）・沖縄県（宮古島地方）用
+        if ($region_id === '0110' or // 北海道（宗谷地方）
+            $region_id === '2700' or // 大阪府
+            $region_id === '3700' or // 香川県
+            $region_id === '4720' or // 沖縄県（大東島地方）
+            $region_id === '4730') { // 沖縄県（宮古島地方）
+            $weather = [
+                    $weather_table->eq(0 + (($city_id) * 4)), // 表のヘッダー
+                    $weather_table->eq(1 + (($city_id) * 4)), // 今日の天気
+                    $weather_table->eq(2 + (($city_id) * 4)), // 明日の天気
+                    $weather_table->eq(3 + (($city_id) * 4)), // 明後日の天気
+            ];
+        // それ以外の地域
+        } else {
+            $weather = [
+                    $weather_table->eq(0 + (($city_id - 1) * 4)), // 表のヘッダー
+                    $weather_table->eq(1 + (($city_id - 1) * 4)), // 今日の天気
+                    $weather_table->eq(2 + (($city_id - 1) * 4)), // 明日の天気
+                    $weather_table->eq(3 + (($city_id - 1) * 4)), // 明後日の天気
+            ];
+        }
 
         // 要素があるか（なければ存在しない ID なのでエラーを出す）
         try {
@@ -167,8 +218,6 @@ class Weather extends Model
 
         // table のヘッダーから publicTime を抽出
         preg_match('/(\d+)日(\d+)時/', $goutte->filter('table#forecasttablefont > caption')->text(), $match1); // 正規表現で抽出
-
-        $match[1] = '5';
 
         if (intval(date('d')) < intval($match1[1])) { // 先月の日付 (現在の曜日よりも抽出した曜日の方が大きい)
             $weather_publicTime = date('Y/m/d H:i:s', strtotime(date('Y/m/', strtotime('-1 month')).$match1[1].' '.$match1[2].':00:00')); // 先月に設定
@@ -296,9 +345,9 @@ class Weather extends Model
             $area = '中部';
         } else if (intval($prefecture_id) >= 24 and intval($prefecture_id) <= 30) {
             $area = '近畿';
-        } else if ((intval($prefecture_id) >= 31 and intval($prefecture_id) <= 34) or intval($prefecture_id) === 39) {
+        } else if (intval($prefecture_id) >= 31 and intval($prefecture_id) <= 35) {
             $area = '中国';
-        } else if (intval($prefecture_id) >= 35 and intval($prefecture_id) <= 38) {
+        } else if (intval($prefecture_id) >= 36 and intval($prefecture_id) <= 39) {
             $area = '四国';
         } else if (intval($prefecture_id) >= 40 and intval($prefecture_id) <= 46) {
             $area = '九州';
