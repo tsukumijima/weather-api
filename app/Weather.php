@@ -80,36 +80,47 @@ class Weather extends Model
             '晴れ' => "{$url}/icon/1.gif",
             '晴時々曇' => "{$url}/icon/2.gif",
             '晴時々雨' => "{$url}/icon/3.gif",
+            '晴時々雨か雪' => "{$url}/icon/3.gif",
             '晴時々雪' => "{$url}/icon/4.gif",
             '晴一時曇' => "{$url}/icon/2.gif",
             '晴一時雨' => "{$url}/icon/3.gif",
+            '晴一時雨か雪' => "{$url}/icon/3.gif",
             '晴一時雪' => "{$url}/icon/4.gif",
             '晴のち時々曇' => "{$url}/icon/2.gif",
             '晴のち時々雨' => "{$url}/icon/3.gif",
+            '晴のち時々雨か雪' => "{$url}/icon/3.gif",
             '晴のち時々雪' => "{$url}/icon/4.gif",
             '晴のち一時曇' => "{$url}/icon/2.gif",
             '晴のち一時雨' => "{$url}/icon/3.gif",
+            '晴のち一時雨か雪' => "{$url}/icon/3.gif",
             '晴のち一時雪' => "{$url}/icon/4.gif",
             '晴のち曇' => "{$url}/icon/5.gif",
             '晴のち雨' => "{$url}/icon/6.gif",
+            '晴のち雨か雪' => "{$url}/icon/6.gif",
             '晴のち雪' => "{$url}/icon/7.gif",
             '曇り' => "{$url}/icon/8.gif",
             '曇時々晴' => "{$url}/icon/9.gif",
             '曇時々雨' => "{$url}/icon/10.gif",
+            '曇時々雨か雪' => "{$url}/icon/10.gif",
             '曇時々雪' => "{$url}/icon/11.gif",
             '曇一時晴' => "{$url}/icon/9.gif",
             '曇一時雨' => "{$url}/icon/10.gif",
+            '曇一時雨か雪' => "{$url}/icon/10.gif",
             '曇一時雪' => "{$url}/icon/11.gif",
             '曇のち時々晴' => "{$url}/icon/9.gif",
             '曇のち時々雨' => "{$url}/icon/10.gif",
+            '曇のち時々雨か雪' => "{$url}/icon/10.gif",
             '曇のち時々雪' => "{$url}/icon/11.gif",
             '曇のち一時晴' => "{$url}/icon/9.gif",
             '曇のち一時雨' => "{$url}/icon/10.gif",
+            '曇のち一時雨か雪' => "{$url}/icon/10.gif",
             '曇のち一時雪' => "{$url}/icon/11.gif",
             '曇のち晴' => "{$url}/icon/12.gif",
             '曇のち雨' => "{$url}/icon/13.gif",
+            '曇のち雨か雪' => "{$url}/icon/13.gif",
             '曇のち雪' => "{$url}/icon/14.gif",
             '雨' => "{$url}/icon/15.gif",
+            '雨か雪' => "{$url}/icon/15.gif",
             '雨時々晴' => "{$url}/icon/16.gif",
             '雨時々曇' => "{$url}/icon/17.gif",
             '雨時々雪' => "{$url}/icon/18.gif",
@@ -131,18 +142,23 @@ class Weather extends Model
             '雪時々晴' => "{$url}/icon/24.gif",
             '雪時々曇' => "{$url}/icon/25.gif",
             '雪時々雨' => "{$url}/icon/26.gif",
+            '雪時々雨か雪' => "{$url}/icon/26.gif",
             '雪一時晴' => "{$url}/icon/24.gif",
             '雪一時曇' => "{$url}/icon/25.gif",
             '雪一時雨' => "{$url}/icon/26.gif",
+            '雪一時雨か雪' => "{$url}/icon/26.gif",
             '雪のち時々晴' => "{$url}/icon/24.gif",
             '雪のち時々曇' => "{$url}/icon/25.gif",
             '雪のち時々雨' => "{$url}/icon/26.gif",
+            '雪のち時々雨か雪' => "{$url}/icon/26.gif",
             '雪のち一時晴' => "{$url}/icon/24.gif",
             '雪のち一時曇' => "{$url}/icon/25.gif",
             '雪のち一時雨' => "{$url}/icon/26.gif",
+            '雪のち一時雨か雪' => "{$url}/icon/26.gif",
             '雪のち晴' => "{$url}/icon/27.gif",
             '雪のち曇' => "{$url}/icon/28.gif",
             '雪のち雨' => "{$url}/icon/29.gif",
+            '雪のち雨か雪' => "{$url}/icon/29.gif",
             '大雪' => "{$url}/icon/30.gif",
             '暴風雪' => "{$url}/icon/30.gif",
             'その他' => "{$url}/icon/31.gif"
@@ -531,10 +547,16 @@ class Weather extends Model
             $weather_json['forecasts'][0]['image']['title'] = $weather_telop[1];
             $weather_json['forecasts'][1]['image']['title'] = $weather_telop[2];
             $weather_json['forecasts'][2]['image']['title'] = null;
-            if (isset($weather_image[$weather_telop[0]])) $weather_json['forecasts'][0]['image']['url'] = $weather_image[$weather_telop[1]];
-            else if ($weather_telop[0] != null) $weather_json['forecasts'][0]['image']['url'] = $weather_image['その他'];
-            if (isset($weather_image[$weather_telop[1]])) $weather_json['forecasts'][1]['image']['url'] = $weather_image[$weather_telop[2]];
-            else if ($weather_telop[1] != null)  $weather_json['forecasts'][1]['image']['url'] = $weather_image['その他'];
+            if (isset($weather_image[$weather_telop[1]])) {  // その天気の画像が存在する
+                $weather_json['forecasts'][0]['image']['url'] = $weather_image[$weather_telop[1]];
+            } else if ($weather_telop[0] != null) {  // その天気の画像は存在しないが、天気自体はある
+                $weather_json['forecasts'][0]['image']['url'] = $weather_image['その他'];
+            }
+            if (isset($weather_image[$weather_telop[2]])) {  // その天気の画像が存在する
+                $weather_json['forecasts'][1]['image']['url'] = $weather_image[$weather_telop[2]];
+            } else if ($weather_telop[1] != null) {  // その天気の画像は存在しないが、天気自体はある
+                $weather_json['forecasts'][1]['image']['url'] = $weather_image['その他'];
+            }
             $weather_json['forecasts'][2]['image']['url'] = null;
 
         // 通常時
@@ -555,12 +577,21 @@ class Weather extends Model
             $weather_json['forecasts'][0]['image']['title'] = $weather_telop[0];
             $weather_json['forecasts'][1]['image']['title'] = $weather_telop[1];
             $weather_json['forecasts'][2]['image']['title'] = $weather_telop[2];
-            if (isset($weather_image[$weather_telop[0]])) $weather_json['forecasts'][0]['image']['url'] = $weather_image[$weather_telop[0]];
-            else if ($weather_telop[0] != null) $weather_json['forecasts'][0]['image']['url'] = $weather_image['その他'];
-            if (isset($weather_image[$weather_telop[1]])) $weather_json['forecasts'][1]['image']['url'] = $weather_image[$weather_telop[1]];
-            else if ($weather_telop[1] != null)  $weather_json['forecasts'][1]['image']['url'] = $weather_image['その他'];
-            if (isset($weather_image[$weather_telop[2]])) $weather_json['forecasts'][2]['image']['url'] = $weather_image[$weather_telop[2]];
-            else if ($weather_telop[2] != null)  $weather_json['forecasts'][2]['image']['url'] = $weather_image['その他'];
+            if (isset($weather_image[$weather_telop[0]])) {  // その天気の画像が存在する
+                $weather_json['forecasts'][0]['image']['url'] = $weather_image[$weather_telop[0]];
+            } else if ($weather_telop[0] != null) {  // その天気の画像は存在しないが、天気自体はある
+                $weather_json['forecasts'][0]['image']['url'] = $weather_image['その他'];
+            }
+            if (isset($weather_image[$weather_telop[1]])) {  // その天気の画像が存在する
+                $weather_json['forecasts'][1]['image']['url'] = $weather_image[$weather_telop[1]];
+            } else if ($weather_telop[1] != null) {  // その天気の画像は存在しないが、天気自体はある
+                $weather_json['forecasts'][1]['image']['url'] = $weather_image['その他'];
+            }
+            if (isset($weather_image[$weather_telop[2]])) {  // その天気の画像が存在する
+                $weather_json['forecasts'][2]['image']['url'] = $weather_image[$weather_telop[2]];
+            } else if ($weather_telop[2] != null) {  // その天気の画像は存在しないが、天気自体はある
+                $weather_json['forecasts'][2]['image']['url'] = $weather_image['その他'];
+            }
 
         }
 
