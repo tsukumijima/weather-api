@@ -306,26 +306,29 @@
                 <tr>
                   <th class="thline">chanceOfRain</th>
                   <td class="tdline">
-                    <div style="margin-bottom: 12px;">降水確率（明後日は取得できません）</div>
+                    <div style="margin-bottom: 12px;">
+                      降水確率（明後日は取得できず、常に --% になります）<br>
+                      T00_06 などは Java など数字始まりやハイフンを含むキーが使えない言語向けのプロパティです
+                    </div>
                     <table cellpadding="0" cellspacing="0" width="100%" class="tableline">
                       <tr>
                         <th class="title" nowrap>プロパティ名</th>
                         <th class="title" width="98%">内容</th>
                       </tr>
                       <tr>
-                        <th class="thline">00-06</th>
+                        <th class="thline">00-06 / T00_06</th>
                         <td class="tdline">0 時から 6 時までの降水確率</td>
                       </tr>
                       <tr>
-                        <th class="thline">06-12</th>
+                        <th class="thline">06-12 / T06_12</th>
                         <td class="tdline">6 時から 12 時までの降水確率</td>
                       </tr>
                       <tr>
-                        <th class="thline">12-18</th>
+                        <th class="thline">12-18 / T12_18</th>
                         <td class="tdline">12 時から 18 時までの降水確率</td>
                       </tr>
                       <tr>
-                        <th class="thline">18-24</th>
+                        <th class="thline">18-24 / T18_24</th>
                         <td class="tdline">18 時から 24 時までの降水確率</td>
                       </tr>
                     </table>
@@ -452,7 +455,11 @@
               "00-06": "--%",
               "06-12": "20%",
               "12-18": "80%",
-              "18-24": "80%"
+              "18-24": "80%",
+              "T00_06": "--%",
+              "T06_12": "20%",
+              "T12_18": "80%",
+              "T18_24": "80%"
           },
           "image": {
               "title": "曇のち雨",
@@ -479,7 +486,11 @@
               "00-06": "90%",
               "06-12": "90%",
               "12-18": "60%",
-              "18-24": "20%"
+              "18-24": "20%",
+              "T00_06": "90%",
+              "T06_12": "90%",
+              "T12_18": "60%",
+              "T18_24": "20%"
           },
           "image": {
               "title": "暴風雨",
@@ -500,7 +511,11 @@
               "00-06": "--%",
               "06-12": "--%",
               "12-18": "--%",
-              "18-24": "--%"
+              "18-24": "--%",
+              "T00_06": "--%",
+              "T06_12": "--%",
+              "T12_18": "--%",
+              "T18_24": "--%"
           },
           "image": {
               "title": null,

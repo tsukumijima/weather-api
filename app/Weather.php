@@ -323,6 +323,11 @@ class Weather extends Model
                 $weather_chanceOfRain[$i - 1]['12-18'] = '--%';
                 $weather_chanceOfRain[$i - 1]['18-24'] = '--%';
             }
+            // Java など数字始まりやハイフンを含むキーが使えない言語向けのプロパティ
+            $weather_chanceOfRain[$i - 1]['T00_06'] = $weather_chanceOfRain[$i - 1]['00-06'];
+            $weather_chanceOfRain[$i - 1]['T06_12'] = $weather_chanceOfRain[$i - 1]['06-12'];
+            $weather_chanceOfRain[$i - 1]['T12_18'] = $weather_chanceOfRain[$i - 1]['12-18'];
+            $weather_chanceOfRain[$i - 1]['T18_24'] = $weather_chanceOfRain[$i - 1]['18-24'];
         }
 
 
