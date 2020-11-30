@@ -242,8 +242,8 @@ class Weather extends Model
         }
 
         // ISO8601 形式に変換
-        $date = new \DateTime($weather_publicTime); // \ をつけないと DateTime クラスが検索できない
-        $weather_publicTime_iso8601 = $date->format(\DateTime::ATOM);
+        $weather_publicTime_datetime = new \DateTime($weather_publicTime); // \ をつけないと DateTime クラスが検索できない
+        $weather_publicTime_iso8601 = $weather_publicTime_datetime->format(\DateTime::ATOM);
 
 
         // 天気概要を抽出
@@ -261,8 +261,8 @@ class Weather extends Model
         $weather_description_publicTime = date('Y/m/d H:i:s', strtotime(ConvertDate::convertJtGDate($match2[1])." {$match2[2]}:{$match2[3]}:00"));
 
         // ISO8601 形式に変換
-        $date = new \DateTime($weather_description_publicTime); // \ をつけないと DateTime クラスが検索できない
-        $weather_description_publicTime_iso8601 = $date->format(\DateTime::ATOM);
+        $weather_description_publicTime_datetime = new \DateTime($weather_description_publicTime); // \ をつけないと DateTime クラスが検索できない
+        $weather_description_publicTime_iso8601 = $weather_description_publicTime_datetime->format(\DateTime::ATOM);
 
 
         // 天気を取得
@@ -332,17 +332,12 @@ class Weather extends Model
 
 
         // 日付
-        $weather_date = [];
-        for ($i = 1; $i <= 3; $i++) {
-            // 日付を html から取得して数字だけにする
-            $weather_date_tmp = preg_replace('/[^0-9]/', '', $weather[$i]->filter('th.weather')->text());
-            // 現在時刻 + (今日・明日・明後日) よりも後の曜日になっていたら先月と判定する
-            if (intval(date('d')) + ($i - 1) < intval($weather_date_tmp)){ // 先月の日付
-                $weather_date[$i - 1] = date('Y-m-', strtotime('-1 month')).str_pad($weather_date_tmp, 2, 0, STR_PAD_LEFT); // 先月に設定
-            } else { // 今月の設定
-                $weather_date[$i - 1] = date('Y-m-').str_pad($weather_date_tmp, 2, 0, STR_PAD_LEFT); // 今月に設定
-            }
-        }
+        // HTML から取得すると月またぎ問題で変なことになったので既に取得した $weather_publicTime_datetime から1日/2日足す
+        $weather_date = [
+            $weather_publicTime_datetime->format('Y-m-d'),
+            $weather_publicTime_datetime->modify('+1 days')->format('Y-m-d'),
+            $weather_publicTime_datetime->modify('+1 days')->format('Y-m-d'), // +1 days したインスタンスにさらに +1 days
+        ];
 
         // 地域
         if ($weather[1]->filter('table.temp td.city')->count() >= 1) {
@@ -532,8 +527,8 @@ class Weather extends Model
             // 予報の日付を +1 する
             for ($i = 1; $i <= 3; $i++) {
                 $date = new \DateTime($weather_date[$i - 1]);
-                $date->modify('+1 days');
-                $weather_json['forecasts'][$i - 1]['date'] = $date->format('Y-m-d');
+                $weather_json['forecasts'][$i - 1]['date'] = $date->modify('+1 days')->format('Y-m-d');
+                unset($date);
             }
             
             $weather_json['forecasts'][0]['telop'] = $weather_telop[1];
