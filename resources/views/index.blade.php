@@ -111,7 +111,8 @@
 
         <p>天気予報 API（livedoor 天気互換）は、気象庁が配信している全国各地の今日・明日・あさっての天気予報・予想気温と都道府県の天気概況情報を json データで提供しています。</p>
         <p>去る 2020 年 7 月、<a href="https://help.livedoor.com/weather/index.html" target="_blank">livedoor 天気がサービス終了となりました。</a>livedoor 天気の API はわかりやすく、認証も不要でとても利用しやすかったのですが、突然の終了となりとても残念です。<br>代替として使えそうな API を探しましたが、OpenWeatherMap は API キーが必要な上に予報自体が正確でなかったり、気象庁のサイトはそもそも API がなかったりなど livedoor 天気のように手軽に使える API は見つからず、こうして自作することとなりました。</p>
-        <p class="mb-0">この API は、<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> から配信されている全国各地の天気予報を取得し、終了した livedoor 天気 の API と互換性のある json 形式のデータで提供するものです。URL を差し替えるだけで極力既存のコードをいじることなく利用できるようにしているつもりですが、<span class="text-danger font-weight-bold">livedoor 天気の API からの変更点や注意点もあります。</span>利用される際は下記の 変更点・注意事項 をよく読んだ上でご利用ください。</p>
+        <p>この API は、<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> から配信されている全国各地の天気予報を取得し、終了した livedoor 天気 の API と互換性のある json 形式のデータで提供するものです。URL を差し替えるだけで極力既存のコードをいじることなく利用できるようにしているつもりですが、<span class="text-danger font-weight-bold">livedoor 天気の API からの変更点や注意点もあります。</span>利用される際は下記の 変更点・注意事項 をよく読んだ上でご利用ください。</p>
+        <p class="mb-0"><span class="text-danger font-weight-bold"><u>現在、気象庁 HP のリニューアルの影響で動作しなくなっています。</u> 近く対応予定ですので、今しばらくお待ちください。</span></p>
 
       </div>
     </div>
