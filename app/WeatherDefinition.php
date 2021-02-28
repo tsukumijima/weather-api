@@ -9,13 +9,14 @@ class WeatherDefinition extends Model
 
     // 天気コード対照表
     // 100.svg ～ は昼間用、500.svg ～ は夜間予報
+    // 表現は livedoor 天気や Yahoo! 天気に合わせてある（後→のち など）
     // JSON.stringify(Forecast.Const.TELOPS)
     const Telops = [
         '100' => [
             '100.svg',
             '500.svg',
             '100',
-            '晴',
+            '晴れ',
             'CLEAR'
         ],
         '101' => [
@@ -78,70 +79,70 @@ class WeatherDefinition extends Model
             '110.svg',
             '510.svg',
             '100',
-            '晴後時々曇',
+            '晴のち時々曇',
             'CLEAR, PARTLY CLOUDY LATER'
         ],
         '111' => [
             '110.svg',
             '510.svg',
             '100',
-            '晴後曇',
+            '晴のち曇',
             'CLEAR, CLOUDY LATER'
         ],
         '112' => [
             '112.svg',
             '512.svg',
             '300',
-            '晴後一時雨',
+            '晴のち一時雨',
             'CLEAR, OCCASIONAL SCATTERED SHOWERS LATER'
         ],
         '113' => [
             '112.svg',
             '512.svg',
             '300',
-            '晴後時々雨',
+            '晴のち時々雨',
             'CLEAR, FREQUENT SCATTERED SHOWERS LATER'
         ],
         '114' => [
             '112.svg',
             '512.svg',
             '300',
-            '晴後雨',
+            '晴のち雨',
             'CLEAR,RAIN LATER'
         ],
         '115' => [
             '115.svg',
             '515.svg',
             '400',
-            '晴後一時雪',
+            '晴のち一時雪',
             'CLEAR, OCCASIONAL SNOW FLURRIES LATER'
         ],
         '116' => [
             '115.svg',
             '515.svg',
             '400',
-            '晴後時々雪',
+            '晴のち時々雪',
             'CLEAR, FREQUENT SNOW FLURRIES LATER'
         ],
         '117' => [
             '115.svg',
             '515.svg',
             '400',
-            '晴後雪',
+            '晴のち雪',
             'CLEAR,SNOW LATER'
         ],
         '118' => [
             '112.svg',
             '512.svg',
             '300',
-            '晴後雨か雪',
+            '晴のち雨か雪',
             'CLEAR, RAIN OR SNOW LATER'
         ],
         '119' => [
             '112.svg',
             '512.svg',
             '300',
-            '晴後雨か雷雨',
+            '晴のち雨か雷雨',
             'CLEAR, RAIN AND/OR THUNDER LATER'
         ],
         '120' => [
@@ -183,7 +184,7 @@ class WeatherDefinition extends Model
             '112.svg',
             '512.svg',
             '300',
-            '晴午後は雷雨',
+            '晴午のちは雷雨',
             'CLEAR, RAIN AND THUNDER IN THE AFTERNOON'
         ],
         '126' => [
@@ -211,7 +212,7 @@ class WeatherDefinition extends Model
             '100.svg',
             '500.svg',
             '100',
-            '朝の内霧後晴',
+            '朝の内霧のち晴',
             'FOG IN THE MORNING, CLEAR LATER'
         ],
         '131' => [
@@ -253,14 +254,14 @@ class WeatherDefinition extends Model
             '115.svg',
             '515.svg',
             '400',
-            '晴後雪か雨',
+            '晴のち雪か雨',
             'CLEAR, SNOW OR RAIN LATER'
         ],
         '200' => [
             '200.svg',
             '200.svg',
             '200',
-            '曇',
+            '曇り',
             'CLOUDY'
         ],
         '201' => [
@@ -330,70 +331,70 @@ class WeatherDefinition extends Model
             '210.svg',
             '610.svg',
             '200',
-            '曇後時々晴',
+            '曇のち時々晴',
             'CLOUDY, PARTLY CLOUDY LATER'
         ],
         '211' => [
             '210.svg',
             '610.svg',
             '200',
-            '曇後晴',
+            '曇のち晴',
             'CLOUDY, CLEAR LATER'
         ],
         '212' => [
             '212.svg',
             '212.svg',
             '300',
-            '曇後一時雨',
+            '曇のち一時雨',
             'CLOUDY, OCCASIONAL SCATTERED SHOWERS LATER'
         ],
         '213' => [
             '212.svg',
             '212.svg',
             '300',
-            '曇後時々雨',
+            '曇のち時々雨',
             'CLOUDY, FREQUENT SCATTERED SHOWERS LATER'
         ],
         '214' => [
             '212.svg',
             '212.svg',
             '300',
-            '曇後雨',
+            '曇のち雨',
             'CLOUDY, RAIN LATER'
         ],
         '215' => [
             '215.svg',
             '215.svg',
             '400',
-            '曇後一時雪',
+            '曇のち一時雪',
             'CLOUDY, SNOW FLURRIES LATER'
         ],
         '216' => [
             '215.svg',
             '215.svg',
             '400',
-            '曇後時々雪',
+            '曇のち時々雪',
             'CLOUDY, FREQUENT SNOW FLURRIES LATER'
         ],
         '217' => [
             '215.svg',
             '215.svg',
             '400',
-            '曇後雪',
+            '曇のち雪',
             'CLOUDY, SNOW LATER'
         ],
         '218' => [
             '212.svg',
             '212.svg',
             '300',
-            '曇後雨か雪',
+            '曇のち雨か雪',
             'CLOUDY, RAIN OR SNOW LATER'
         ],
         '219' => [
             '212.svg',
             '212.svg',
             '300',
-            '曇後雨か雷雨',
+            '曇のち雨か雷雨',
             'CLOUDY, RAIN AND/OR THUNDER LATER'
         ],
         '220' => [
@@ -505,7 +506,7 @@ class WeatherDefinition extends Model
             '215.svg',
             '215.svg',
             '400',
-            '曇後雪か雨',
+            '曇のち雪か雨',
             'CLOUDY, SNOW OR RAIN LATER'
         ],
         '300' => [
@@ -554,7 +555,7 @@ class WeatherDefinition extends Model
             '308.svg',
             '308.svg',
             '300',
-            '雨で暴風を伴う',
+            '暴風雨',
             'RAINSTORM'
         ],
         '309' => [
@@ -568,56 +569,56 @@ class WeatherDefinition extends Model
             '311.svg',
             '711.svg',
             '300',
-            '雨後晴',
+            '雨のち晴',
             'RAIN,CLEAR LATER'
         ],
         '313' => [
             '313.svg',
             '313.svg',
             '300',
-            '雨後曇',
+            '雨のち曇',
             'RAIN,CLOUDY LATER'
         ],
         '314' => [
             '314.svg',
             '314.svg',
             '400',
-            '雨後時々雪',
+            '雨のち時々雪',
             'RAIN, FREQUENT SNOW FLURRIES LATER'
         ],
         '315' => [
             '314.svg',
             '314.svg',
             '400',
-            '雨後雪',
+            '雨のち雪',
             'RAIN,SNOW LATER'
         ],
         '316' => [
             '311.svg',
             '711.svg',
             '300',
-            '雨か雪後晴',
+            '雨か雪のち晴',
             'RAIN OR SNOW, CLEAR LATER'
         ],
         '317' => [
             '313.svg',
             '313.svg',
             '300',
-            '雨か雪後曇',
+            '雨か雪のち曇',
             'RAIN OR SNOW, CLOUDY LATER'
         ],
         '320' => [
             '311.svg',
             '711.svg',
             '300',
-            '朝の内雨後晴',
+            '朝の内雨のち晴',
             'RAIN IN THE MORNING, CLEAR LATER'
         ],
         '321' => [
             '313.svg',
             '313.svg',
             '300',
-            '朝の内雨後曇',
+            '朝の内雨のち曇',
             'RAIN IN THE MORNING, CLOUDY LATER'
         ],
         '322' => [
@@ -694,14 +695,14 @@ class WeatherDefinition extends Model
             '411.svg',
             '811.svg',
             '400',
-            '雪か雨後晴',
+            '雪か雨のち晴',
             'SNOW OR RAIN, CLEAR LATER'
         ],
         '371' => [
             '413.svg',
             '413.svg',
             '400',
-            '雪か雨後曇',
+            '雪か雨のち曇',
             'SNOW OR RAIN, CLOUDY LATER'
         ],
         '400' => [
@@ -764,35 +765,35 @@ class WeatherDefinition extends Model
             '411.svg',
             '811.svg',
             '400',
-            '雪後晴',
+            '雪のち晴',
             'SNOW,CLEAR LATER'
         ],
         '413' => [
             '413.svg',
             '413.svg',
             '400',
-            '雪後曇',
+            '雪のち曇',
             'SNOW,CLOUDY LATER'
         ],
         '414' => [
             '414.svg',
             '414.svg',
             '400',
-            '雪後雨',
+            '雪のち雨',
             'SNOW,RAIN LATER'
         ],
         '420' => [
             '411.svg',
             '811.svg',
             '400',
-            '朝の内雪後晴',
+            '朝の内雪のち晴',
             'SNOW IN THE MORNING, CLEAR LATER'
         ],
         '421' => [
             '413.svg',
             '413.svg',
             '400',
-            '朝の内雪後曇',
+            '朝の内雪のち曇',
             'SNOW IN THE MORNING, CLOUDY LATER'
         ],
         '422' => [
@@ -820,7 +821,7 @@ class WeatherDefinition extends Model
             '400.svg',
             '400.svg',
             '400',
-            '雪後みぞれ',
+            '雪のちみぞれ',
             'SNOW, SLEET LATER'
         ],
         '427' => [
