@@ -14,8 +14,10 @@ class ForecastController extends Controller
      */
     public function index($city_id)
     {
-        // 天気予報を返す
-        return Weather::getWeatherForecast($city_id);
+        // 天気予報を取得
+        $weather = Weather::getWeather($city_id);
+
+        return json_encode($weather, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
     }
 
     /**
@@ -27,8 +29,10 @@ class ForecastController extends Controller
     {
         if (!empty($request->input('city'))) {
 
-            // 天気予報を返す
-            return Weather::getWeatherForecast($request->input('city'));
+            // 天気予報を取得
+            $weather = Weather::getWeather($request->input('city'));
+            
+            return json_encode($weather, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
 
         } else {
 

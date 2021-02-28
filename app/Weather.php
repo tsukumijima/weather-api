@@ -2,78 +2,26 @@
 
 namespace App;
 
-use App\ConvertDate;
+use DateTimeImmutable;
+use App\WeatherDefinition;
 use Illuminate\Database\Eloquent\Model;
-use Weidner\Goutte\GoutteFacade as GoutteFacade;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class Weather extends Model
 {
 
-    public static function getWeatherForecast($id)
+    /**
+     * 天気予報を livedoor 天気互換の JSON で返す
+     *
+     * @param string $id 地点定義表で定義されている地点ID
+     * @return array livedoor 天気互換の JSON
+     */
+    public static function getWeather(string $id): array
     {
 
         // サイトの URL を取得
         $url = url('/');
-
-        // 都道府県ごとの livedoor 天気と気象庁の ID の対照表
-        $region_id_table = [
-            '0110' => '301', // 北海道（宗谷地方）
-            '0120' => '302', // 北海道（上川・留萌地方）
-            '0130' => '303', // 北海道（網走・北見・紋別地方）
-            '0140' => '304', // 北海道（釧路・根室・十勝地方）
-            '0150' => '305', // 北海道（胆振・日高地方）
-            '0160' => '306', // 北海道（石狩・空知・後志地方）
-            '0170' => '307', // 北海道（渡島・檜山地方）
-            '0200' => '308', // 青森県
-            '0300' => '310', // 岩手県
-            '0400' => '312', // 宮城県
-            '0500' => '309', // 秋田県
-            '0600' => '311', // 山形県
-            '0700' => '313', // 福島県
-            '0800' => '314', // 茨城県
-            '0900' => '316', // 栃木県
-            '1000' => '315', // 群馬県
-            '1100' => '317', // 埼玉県
-            '1200' => '318', // 千葉県
-            '1300' => '319', // 東京都
-            '1400' => '320', // 神奈川県
-            '1500' => '323', // 新潟県
-            '1600' => '324', // 富山県
-            '1700' => '325', // 石川県
-            '1800' => '326', // 福井県
-            '1900' => '321', // 山梨県
-            '2000' => '322', // 長野県
-            '2100' => '328', // 岐阜県
-            '2200' => '327', // 静岡県
-            '2300' => '329', // 愛知県
-            '2400' => '330', // 三重県
-            '2500' => '334', // 滋賀県
-            '2600' => '333', // 京都府
-            '2700' => '331', // 大阪府
-            '2800' => '332', // 兵庫県
-            '2900' => '335', // 奈良県
-            '3000' => '336', // 和歌山県
-            '3100' => '339', // 鳥取県
-            '3200' => '337', // 島根県
-            '3300' => '340', // 岡山県
-            '3400' => '338', // 広島県
-            '3500' => '345', // 山口県
-            '3600' => '343', // 徳島県
-            '3700' => '341', // 香川県
-            '3800' => '342', // 愛媛県
-            '3900' => '344', // 高知県
-            '4000' => '346', // 福岡県
-            '4100' => '347', // 佐賀県
-            '4200' => '348', // 長崎県
-            '4300' => '349', // 熊本県
-            '4400' => '350', // 大分県
-            '4500' => '351', // 宮崎県
-            '4600' => '352', // 鹿児島県
-            '4710' => '353', // 沖縄県（沖縄本島地方）
-            '4720' => '354', // 沖縄県（大東島地方）
-            '4730' => '355', // 沖縄県（宮古島地方）
-            '4740' => '356', // 沖縄県（八重山地方）
-        ];
 
         // 天気画像
         $weather_image = [
@@ -165,250 +113,73 @@ class Weather extends Model
         ];
 
 
-        // 数値でない or 6桁ではない
-        if (!is_numeric($id) or strlen($id) != 6) {
-            return [
-                'error' => 'The specified city ID is invalid.'
-            ];
+        /**** 各 ID 定義 ****/
+
+        // 数値でない or 6桁ではない or 地点定義に存在しないID
+        if (!is_numeric($id) or strlen($id) != 6 or !isset(WeatherDefinition::AREA['class10s'][$id])) {
+            return ['error' => 'The specified city ID is invalid.'];
         }
 
-        // ID
-        $prefecture_id = substr($id, 0, 2);
-        $region_id = substr($id, 0, 4);
-        $city_id = substr($id, 4, 1);
+        // 地域ID / 地域名（〇〇地方）
+        $city_id = (string) $id;
+        $city_index = intval(substr($city_id, 4, 1)) - 1;
+        if ($city_index < 0) $city_index = 0;  // 大東島など一部の地域用
+        $city_point_name = WeatherDefinition::AREA['class10s'][$city_id]['name'];
 
-        // 気象庁 HP の ID を算出
-        if (isset($region_id_table[strval($region_id)])) {
-            $jma_id = strval($region_id_table[$region_id]);
-        } else { // 存在しない ID
-            return [
-                'error' => 'The specified city ID does not exist.'
-            ];
-        }
+        // 都道府県ID / 都道府県名
+        $prefecture_id = (string) WeatherDefinition::AREA['class10s'][$id]['parent'];
+        $prefecture_name = WeatherDefinition::AREA['offices'][$prefecture_id]['name'];
+
+        // 地方名（九州、東北 など）
+        $area_name = Weather::getAreaName($prefecture_id);
 
 
-        // アクセスする気象庁 HP の URL
-        $jma_url = "https://www.jma.go.jp/jp/yoho/{$jma_id}.html";
+        /**** API リクエスト ****/
 
-        // Goutte
-        $goutte = GoutteFacade::request('GET', $jma_url);
+        // 気象庁 HP の API
+        $jma_api_forecast = "https://www.jma.go.jp/bosai/forecast/data/forecast/{$prefecture_id}.json";
+        $jma_api_overview = "https://www.jma.go.jp/bosai/forecast/data/overview_forecast/{$prefecture_id}.json";
 
-        // table から必要な element を抽出
-        $weather_table = $goutte->filter('table#forecasttablefont > tr');
-        
-        /*
-            table の tr 要素は地域ごとに4つ使われるので、$city_id が 1 ならインデックスが 0～3 の tr 要素を、
-            $city_id が 2 ならインデックスが 4～7 要素の tr を… といった具合で取得できるようにしている
-        */
-        // 観測地点が 1 箇所しかない 北海道（宗谷地方）・大阪府・香川県・沖縄県（大東島地方）・沖縄県（宮古島地方）用
-        if ($region_id === '0110' or // 北海道（宗谷地方）
-            $region_id === '2700' or // 大阪府
-            $region_id === '3700' or // 香川県
-            $region_id === '4720' or // 沖縄県（大東島地方）
-            $region_id === '4730') { // 沖縄県（宮古島地方）
-            $weather = [
-                    $weather_table->eq(0 + (($city_id) * 4)), // 表のヘッダー
-                    $weather_table->eq(1 + (($city_id) * 4)), // 今日の天気
-                    $weather_table->eq(2 + (($city_id) * 4)), // 明日の天気
-                    $weather_table->eq(3 + (($city_id) * 4)), // 明後日の天気
-            ];
-        // それ以外の地域
+        // API から気象データを取得
+        $forecast_response = HTTP::get($jma_api_forecast);
+        if ($forecast_response->status() === 200) {
+            $forecast_data = $forecast_response->json();
         } else {
-            $weather = [
-                    $weather_table->eq(0 + (($city_id - 1) * 4)), // 表のヘッダー
-                    $weather_table->eq(1 + (($city_id - 1) * 4)), // 今日の天気
-                    $weather_table->eq(2 + (($city_id - 1) * 4)), // 明日の天気
-                    $weather_table->eq(3 + (($city_id - 1) * 4)), // 明後日の天気
-            ];
+            return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
-
-        // 要素があるか（なければ存在しない ID なのでエラーを出す）
-        try {
-            $weather[0]->text();
-        } catch (\InvalidArgumentException $exception) {
-            return [
-                'error' => 'The specified city ID does not exist.'
-            ];
-        }
-
-
-        // table のヘッダーから publicTime を抽出
-        preg_match('/(\d+)日(\d+)時/', $goutte->filter('table#forecasttablefont > caption')->text(), $match1); // 正規表現で抽出
-
-        if (intval(date('d')) < intval($match1[1])) { // 先月の日付 (現在の曜日よりも抽出した曜日の方が大きい)
-            $weather_publicTime = date('Y/m/d H:i:s', strtotime(date('Y/m/', strtotime('-1 month')).$match1[1].' '.$match1[2].':00:00')); // 先月に設定
-        } else { // 今月の日付
-            $weather_publicTime = date('Y/m/d H:i:s', strtotime(date('Y/m/')."{$match1[1]} {$match1[2]}:00:00")); // 今月に設定
-        }
-
-        // ISO8601 形式に変換
-        $weather_publicTime_datetime = new \DateTime($weather_publicTime); // \ をつけないと DateTime クラスが検索できない
-        $weather_publicTime_iso8601 = $weather_publicTime_datetime->format(\DateTime::ATOM);
-
-
-        // 天気概要を抽出
-        $weather_description_raw = mb_convert_kana($goutte->filter('pre.textframe')->html(), 'as');
-        preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表.*\<b\>.(.*)\<\/b\>(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
-        if (!empty($match2)) {
-            $weather_description_title = str_replace(' ', '', str_replace("\r\n", '', trim($match2[4]))); // 半角スペースと前後の改行を除去
-            $weather_description = $weather_description_title."\n\n".str_replace(' ', '', trim($match2[5])); // 半角スペースと前後の改行を除去
+        $overview_response = HTTP::get($jma_api_overview);
+        if ($overview_response->status() === 200){
+            $overview = $overview_response->json();
         } else {
-            preg_match('/天気概況..(.*)([0-9][0-9])時([0-9][0-9])分.*発表(.*)/s', $weather_description_raw, $match2); // 正規表現で抽出
-            $weather_description = str_replace(' ', '', trim($match2[4])); // 半角スペースと前後の改行を除去
+            return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
 
-        // 天気概要から publicTime を取得
-        $weather_description_publicTime = date('Y/m/d H:i:s', strtotime(ConvertDate::convertJtGDate($match2[1])." {$match2[2]}:{$match2[3]}:00"));
-
-        // ISO8601 形式に変換
-        $weather_description_publicTime_datetime = new \DateTime($weather_description_publicTime); // \ をつけないと DateTime クラスが検索できない
-        $weather_description_publicTime_iso8601 = $weather_description_publicTime_datetime->format(\DateTime::ATOM);
+        // 地域名を取得
+        // livedoor天気では観測地点の名前が使われており、それに合わせるため気象データの方から取得している
+        $city_name = $forecast_data[0]['timeSeries'][2]['areas'][$city_index]['area']['name'];
 
 
-        // 天気を取得
-        $weather_telop = [];
-        for ($i = 1; $i <= 3; $i++) { 
-            if ($weather[$i]->filter('th.weather > img')->count() >= 1) {
-                // 天気を html から取得する
-                $weather_telop[$i - 1] = $weather[$i]->filter('th.weather > img')->attr('title');
+        /**** 気象データから今日・明日・明後日の天気予報を取得 ****/
 
-                // 表現を livedoor 天気や Yahoo! 天気に合わせる
-                if (mb_strlen($weather_telop[$i - 1]) > 2) {
-                    $weather_telop[$i - 1] = str_replace('晴れ', '晴', $weather_telop[$i - 1]);
-                    $weather_telop[$i - 1] = str_replace('曇り', '曇', $weather_telop[$i - 1]);
-                    $weather_telop[$i - 1] = str_replace('止む', '曇', $weather_telop[$i - 1]);
-                    $weather_telop[$i - 1] = str_replace('後時々', '後', $weather_telop[$i - 1]);
-                    $weather_telop[$i - 1] = str_replace('後', 'のち', $weather_telop[$i - 1]);
-                    $weather_telop[$i - 1] = str_replace('雨で暴風を伴う', '暴風雨', $weather_telop[$i - 1]);
-                    $weather_telop[$i - 1] = str_replace('雪で暴風を伴う', '暴風雪', $weather_telop[$i - 1]);
-                }
-            } else {
-                $weather_telop[$i - 1] = null;
-            }
-        }
+        // API のデータは日付が変わっても 5 時までは更新されないため、自力で昨日の情報を削除したり整形する作業が必要になる
+        $forecast = Weather::getForecast($forecast_data);
 
 
-        // 気温を取得
-        $weather_temp = [];
-        for ($i = 1; $i <= 3; $i++) { 
-            if ($weather[$i]->filter('table.temp td.min')->count() >= 1 && !empty($weather[$i]->filter('table.temp td.min')->text())) {
-                // 最低気温を html から取得する
-                $weather_temp[$i - 1]['min']['celsius'] = str_replace('度', '', $weather[$i]->filter('table.temp td.min')->text());
-                $weather_temp[$i - 1]['min']['fahrenheit'] = strval($weather_temp[$i - 1]['min']['celsius'] * 1.8 + 32); // 華氏に変換
-            } else {
-                $weather_temp[$i - 1]['min'] = null;
-            }
-            if ($weather[$i]->filter('table.temp td.max')->count() >= 1 && !empty($weather[$i]->filter('table.temp td.max')->text())) {
-                // 最高気温を html から取得する
-                $weather_temp[$i - 1]['max']['celsius'] = str_replace('度', '', $weather[$i]->filter('table.temp td.max')->text());
-                $weather_temp[$i - 1]['max']['fahrenheit'] = strval($weather_temp[$i - 1]['max']['celsius'] * 1.8 + 32); // 華氏に変換
-            } else {
-                $weather_temp[$i - 1]['max'] = null;
-            }
-        }
+        /**** 出力する JSON データ ****/
 
-
-        // 降水確率を取得
-        $weather_chanceOfRain = [];
-        for ($i = 1; $i <= 3; $i++) { 
-            if ($i !== 3) { // 明後日は取得できないので除外
-                // 降水確率 html から取得する
-                $weather_chanceOfRain[$i - 1]['00-06'] = $weather[$i]->filter('td.rain table.rain > tr')->eq(0)->filter('td')->eq(1)->text();
-                $weather_chanceOfRain[$i - 1]['06-12'] = $weather[$i]->filter('td.rain table.rain > tr')->eq(1)->filter('td')->eq(1)->text();
-                $weather_chanceOfRain[$i - 1]['12-18'] = $weather[$i]->filter('td.rain table.rain > tr')->eq(2)->filter('td')->eq(1)->text();
-                $weather_chanceOfRain[$i - 1]['18-24'] = $weather[$i]->filter('td.rain table.rain > tr')->eq(3)->filter('td')->eq(1)->text();
-            } else {
-                $weather_chanceOfRain[$i - 1]['00-06'] = '--%';
-                $weather_chanceOfRain[$i - 1]['06-12'] = '--%';
-                $weather_chanceOfRain[$i - 1]['12-18'] = '--%';
-                $weather_chanceOfRain[$i - 1]['18-24'] = '--%';
-            }
-            // Java など数字始まりやハイフンを含むキーが使えない言語向けのプロパティ
-            $weather_chanceOfRain[$i - 1]['T00_06'] = $weather_chanceOfRain[$i - 1]['00-06'];
-            $weather_chanceOfRain[$i - 1]['T06_12'] = $weather_chanceOfRain[$i - 1]['06-12'];
-            $weather_chanceOfRain[$i - 1]['T12_18'] = $weather_chanceOfRain[$i - 1]['12-18'];
-            $weather_chanceOfRain[$i - 1]['T18_24'] = $weather_chanceOfRain[$i - 1]['18-24'];
-        }
-
-
-        // 日付
-        // HTML から取得すると月またぎ問題で変なことになったので既に取得した $weather_publicTime_datetime から1日/2日足す
-        $weather_date = [
-            $weather_publicTime_datetime->format('Y-m-d'),
-            $weather_publicTime_datetime->modify('+1 days')->format('Y-m-d'),
-            $weather_publicTime_datetime->modify('+1 days')->format('Y-m-d'), // +1 days したインスタンスにさらに +1 days
-        ];
-
-        // 地域
-        if ($weather[1]->filter('table.temp td.city')->count() >= 1) {
-            $city = $weather[1]->filter('table.temp td.city')->text();
-        } else if ($weather[2]->filter('table.temp td.city')->count() >= 1) {
-            $city = $weather[2]->filter('table.temp td.city')->text();
-        } else if ($weather[3]->filter('table.temp td.city')->count() >= 1) {
-            $city = $weather[3]->filter('table.temp td.city')->text();
-        } else {
-            $city = '';
-        }
-
-        // 地方
-        if (intval($prefecture_id) === 1) {
-            $area = '北海道';
-        } else if (intval($prefecture_id) >= 2 and intval($prefecture_id) <= 7) {
-            $area = '東北';
-        } else if (intval($prefecture_id) >= 8 and intval($prefecture_id) <= 14) {
-            $area = '関東';
-        } else if (intval($prefecture_id) >= 15 and intval($prefecture_id) <= 23) {
-            $area = '中部';
-        } else if (intval($prefecture_id) >= 24 and intval($prefecture_id) <= 30) {
-            $area = '近畿';
-        } else if (intval($prefecture_id) >= 31 and intval($prefecture_id) <= 35) {
-            $area = '中国';
-        } else if (intval($prefecture_id) >= 36 and intval($prefecture_id) <= 39) {
-            $area = '四国';
-        } else if (intval($prefecture_id) >= 40 and intval($prefecture_id) <= 46) {
-            $area = '九州';
-        } else if (intval($prefecture_id) === 47) {
-            $area = '沖縄';
-        } else {
-            $area = '日本';
-        }
-
-        // 都道府県
-        if (intval($prefecture_id) === 1) {
-            $prefecture = '北海道';
-        } else if (intval($prefecture_id) === 47) {
-            $prefecture = '沖縄県';
-        } else {
-            preg_match('/天気予報.： (.*)/', $goutte->filter('td.titleText > h1')->text(), $match3); // 正規表現で抽出
-            $prefecture = $match3[1];
-        }
-
-
-        // JSON の雛形
-        $weather_json = [
-            /*
-            'debug' => [
-                'date' => date('Y/m/d H:i:s'),
-                'weather' => $weather_telop,
-                'weather_temp' => $weather_temp,
-                'prefecture_id' => $prefecture_id,
-                'region_id' => $region_id,
-                'city_id' => $city_id,
-                'jma_id' => $jma_id,
-            ],
-            */
-            'publicTime' => null,
-            'publicTime_format' => null,
-            'title' => null,
+        $forecast_json = [
+            'publicTime' => $forecast_data[0]['reportDatetime'],
+            'formattedPublicTime' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
+            'title' => "{$prefecture_name} {$city_name} の天気",
             'link' => "https://www.jma.go.jp/jma/",
             'description' => [
-                'text' => null,
-                'publicTime' => null,
-                'publicTime_format' => null
+                'text' => "{$overview['headlineText']}\n\n{$overview['text']}",
+                'publicTime' => $overview['reportDatetime'],
+                'formattedPublicTime' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s')
             ],
             'forecasts' => [
                 [
-                    'date' => $weather_date[0],
+                    'date' => $forecast[0]['date'],
                     'dateLabel' => "今日",
                     'telop' => null,
                     'temperature' => [
@@ -435,7 +206,7 @@ class Weather extends Model
                     ]
                 ],
                 [
-                    'date' => $weather_date[1],
+                    'date' => $forecast[1]['date'],
                     'dateLabel' => "明日",
                     'telop' => null,
                     'temperature' => [
@@ -462,7 +233,7 @@ class Weather extends Model
                     ]
                 ],
                 [
-                    'date' => $weather_date[2],
+                    'date' => $forecast[2]['date'],
                     'dateLabel' => "明後日",
                     'telop' => null,
                     'temperature' => [
@@ -484,9 +255,9 @@ class Weather extends Model
                 ]
             ],
             'location' => [
-                'city' => null,
-                'area' => null,
-                'prefecture' => null
+                'city' => $city_name,
+                'area' => $area_name,
+                'prefecture' => $prefecture_name
             ],
             'copyright' => [
                 'link' => "{$url}/",
@@ -508,103 +279,93 @@ class Weather extends Model
             ]
         ];
 
-
-        // 雛形に情報を追加していく
-        $weather_json['publicTime'] = $weather_publicTime_iso8601;
-        $weather_json['publicTime_format'] = $weather_publicTime;
-        $weather_json['title'] = "{$prefecture} {$city} の天気";
-        $weather_json['link'] = $jma_url;
-        $weather_json['description']['text'] = $weather_description;
-        $weather_json['description']['publicTime'] = $weather_description_publicTime_iso8601;
-        $weather_json['description']['publicTime_format'] = $weather_description_publicTime;
-        $weather_json['location']['city'] = $city;
-        $weather_json['location']['area'] = $area;
-        $weather_json['location']['prefecture'] = $prefecture;
-
-        // 昨日の天気予報だったら明日のデータを今日に、明後日のデータを明日に設定
-        if (strtotime(date('Y/m/d')) > strtotime($weather_publicTime)) {
-
-            // 予報の日付を +1 する
-            for ($i = 1; $i <= 3; $i++) {
-                $date = new \DateTime($weather_date[$i - 1]);
-                $weather_json['forecasts'][$i - 1]['date'] = $date->modify('+1 days')->format('Y-m-d');
-                unset($date);
-            }
-            
-            $weather_json['forecasts'][0]['telop'] = $weather_telop[1];
-            $weather_json['forecasts'][1]['telop'] = $weather_telop[2];
-            $weather_json['forecasts'][2]['telop'] = null;
-            
-            $weather_json['forecasts'][0]['chanceOfRain'] = $weather_chanceOfRain[1];
-            $weather_json['forecasts'][1]['chanceOfRain'] = $weather_chanceOfRain[2];
-            // $weather_json['forecasts'][2]['chanceOfRain'] = null; // null だと不親切なので雛形の --% を使う
-
-            $weather_json['forecasts'][0]['temperature'] = $weather_temp[1];
-            $weather_json['forecasts'][1]['temperature'] = $weather_temp[2];
-            $weather_json['forecasts'][2]['temperature']['min'] = null;
-            $weather_json['forecasts'][2]['temperature']['max'] = null;
-
-            $weather_json['forecasts'][0]['image']['title'] = $weather_telop[1];
-            $weather_json['forecasts'][1]['image']['title'] = $weather_telop[2];
-            $weather_json['forecasts'][2]['image']['title'] = null;
-            if (isset($weather_image[$weather_telop[1]])) {  // その天気の画像が存在する
-                $weather_json['forecasts'][0]['image']['url'] = $weather_image[$weather_telop[1]];
-            } else if ($weather_telop[0] != null) {  // その天気の画像は存在しないが、天気自体はある
-                $weather_json['forecasts'][0]['image']['url'] = $weather_image['その他'];
-            }
-            if (isset($weather_image[$weather_telop[2]])) {  // その天気の画像が存在する
-                $weather_json['forecasts'][1]['image']['url'] = $weather_image[$weather_telop[2]];
-            } else if ($weather_telop[1] != null) {  // その天気の画像は存在しないが、天気自体はある
-                $weather_json['forecasts'][1]['image']['url'] = $weather_image['その他'];
-            }
-            $weather_json['forecasts'][2]['image']['url'] = null;
-
-        // 通常時
-        } else {
-
-            $weather_json['forecasts'][0]['telop'] = $weather_telop[0];
-            $weather_json['forecasts'][1]['telop'] = $weather_telop[1];
-            $weather_json['forecasts'][2]['telop'] = $weather_telop[2];
-            
-            $weather_json['forecasts'][0]['chanceOfRain'] = $weather_chanceOfRain[0];
-            $weather_json['forecasts'][1]['chanceOfRain'] = $weather_chanceOfRain[1];
-            $weather_json['forecasts'][2]['chanceOfRain'] = $weather_chanceOfRain[2];
-
-            $weather_json['forecasts'][0]['temperature'] = $weather_temp[0];
-            $weather_json['forecasts'][1]['temperature'] = $weather_temp[1];
-            $weather_json['forecasts'][2]['temperature'] = $weather_temp[2];
-
-            $weather_json['forecasts'][0]['image']['title'] = $weather_telop[0];
-            $weather_json['forecasts'][1]['image']['title'] = $weather_telop[1];
-            $weather_json['forecasts'][2]['image']['title'] = $weather_telop[2];
-            if (isset($weather_image[$weather_telop[0]])) {  // その天気の画像が存在する
-                $weather_json['forecasts'][0]['image']['url'] = $weather_image[$weather_telop[0]];
-            } else if ($weather_telop[0] != null) {  // その天気の画像は存在しないが、天気自体はある
-                $weather_json['forecasts'][0]['image']['url'] = $weather_image['その他'];
-            }
-            if (isset($weather_image[$weather_telop[1]])) {  // その天気の画像が存在する
-                $weather_json['forecasts'][1]['image']['url'] = $weather_image[$weather_telop[1]];
-            } else if ($weather_telop[1] != null) {  // その天気の画像は存在しないが、天気自体はある
-                $weather_json['forecasts'][1]['image']['url'] = $weather_image['その他'];
-            }
-            if (isset($weather_image[$weather_telop[2]])) {  // その天気の画像が存在する
-                $weather_json['forecasts'][2]['image']['url'] = $weather_image[$weather_telop[2]];
-            } else if ($weather_telop[2] != null) {  // その天気の画像は存在しないが、天気自体はある
-                $weather_json['forecasts'][2]['image']['url'] = $weather_image['その他'];
-            }
-
-        }
-
         // json を返す
-        $weather_json_encode = json_encode($weather_json, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+        return $forecast_json;
+    }
 
-        if ($weather_json_encode === false) {
-            $weather_json_encode = json_encode(
-                ['error' => 'Failed to output JSON data.'],
-                JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT
-            );
+
+    /**
+     * 都道府県 ID からその都道府県が属する地方名を取得する
+     * WeatherDefinition では「九州北部地方（山口県を含む）」のように一般的な分類がされていないため
+     *
+     * @param string $prefecture_id 都道府県ID
+     * @return string 地方名
+     */
+    private static function getAreaName(string $prefecture_id): string
+    {
+        $prefecture_id = intval(substr($prefecture_id, 0, 2));
+        if ($prefecture_id === 1) {
+            $area = '北海道';
+        } else if ($prefecture_id >= 2 and $prefecture_id <= 7) {
+            $area = '東北';
+        } else if ($prefecture_id >= 8 and $prefecture_id <= 14) {
+            $area = '関東';
+        } else if ($prefecture_id >= 15 and $prefecture_id <= 23) {
+            $area = '中部';
+        } else if ($prefecture_id >= 24 and $prefecture_id <= 30) {
+            $area = '近畿';
+        } else if ($prefecture_id >= 31 and $prefecture_id <= 35) {
+            $area = '中国';
+        } else if ($prefecture_id >= 36 and $prefecture_id <= 39) {
+            $area = '四国';
+        } else if ($prefecture_id >= 40 and $prefecture_id <= 46) {
+            $area = '九州';
+        } else if ($prefecture_id === 47) {
+            $area = '沖縄';
+        } else {
+            $area = '日本';
+        }
+        return $area;
+    }
+
+
+    /**
+     * 取得した生の気象データから、今日・明日・明後日の天気予報を取得する
+     *
+     * @param array $forecast_data
+     * @return array
+     */
+    private static function getForecast(array $forecast_data): array
+    {
+        $forecast = [];
+
+        // timeDefines の数だけループを回す
+        $index = 0;
+        for ($count = 0; $count < count($forecast_data[0]['timeSeries'][0]['timeDefines']); $count++) {
+
+            // 比較対象の時刻
+            $compare_datetime = new DateTimeImmutable($forecast_data[0]['timeSeries'][0]['timeDefines'][$count]);
+
+            // 現在の時刻
+            $current_datetime = new DateTimeImmutable('now');
+
+            // 比較対象の日付が現在の日付より過去（小さい）ならスキップ
+            if ($compare_datetime->setTime(0,0) < $current_datetime->setTime(0,0)) {
+                continue;
+            }
+
+            // データを入れる
+            $forecast[$index] = [
+                'date' => $compare_datetime->format('Y-m-d'),
+            ];
+
+            $index++;  // インデックスを足す
         }
 
-        return $weather_json_encode;
+        Log::Debug($forecast);
+
+        return $forecast;
+    }
+
+
+    /**
+     * 取得した生の気象データから、今日・明日・明後日の気温を取得する
+     *
+     * @param array $forecast_data
+     * @return array
+     */
+    private static function getTemperature(array $forecast_data): array
+    {
+        return [];
     }
 }
