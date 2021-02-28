@@ -6,7 +6,6 @@ use DateTimeImmutable;
 use App\WeatherDefinition;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class Weather extends Model
 {
@@ -23,112 +22,25 @@ class Weather extends Model
         // サイトの URL を取得
         $url = url('/');
 
-        // 天気画像
-        $weather_image = [
-            '晴れ' => "{$url}/icon/1.gif",
-            '晴時々曇' => "{$url}/icon/2.gif",
-            '晴時々雨' => "{$url}/icon/3.gif",
-            '晴時々雨か雪' => "{$url}/icon/3.gif",
-            '晴時々雪' => "{$url}/icon/4.gif",
-            '晴一時曇' => "{$url}/icon/2.gif",
-            '晴一時雨' => "{$url}/icon/3.gif",
-            '晴一時雨か雪' => "{$url}/icon/3.gif",
-            '晴一時雪' => "{$url}/icon/4.gif",
-            '晴のち時々曇' => "{$url}/icon/2.gif",
-            '晴のち時々雨' => "{$url}/icon/3.gif",
-            '晴のち時々雨か雪' => "{$url}/icon/3.gif",
-            '晴のち時々雪' => "{$url}/icon/4.gif",
-            '晴のち一時曇' => "{$url}/icon/2.gif",
-            '晴のち一時雨' => "{$url}/icon/3.gif",
-            '晴のち一時雨か雪' => "{$url}/icon/3.gif",
-            '晴のち一時雪' => "{$url}/icon/4.gif",
-            '晴のち曇' => "{$url}/icon/5.gif",
-            '晴のち雨' => "{$url}/icon/6.gif",
-            '晴のち雨か雪' => "{$url}/icon/6.gif",
-            '晴のち雪' => "{$url}/icon/7.gif",
-            '曇り' => "{$url}/icon/8.gif",
-            '曇時々晴' => "{$url}/icon/9.gif",
-            '曇時々雨' => "{$url}/icon/10.gif",
-            '曇時々雨か雪' => "{$url}/icon/10.gif",
-            '曇時々雪' => "{$url}/icon/11.gif",
-            '曇一時晴' => "{$url}/icon/9.gif",
-            '曇一時雨' => "{$url}/icon/10.gif",
-            '曇一時雨か雪' => "{$url}/icon/10.gif",
-            '曇一時雪' => "{$url}/icon/11.gif",
-            '曇のち時々晴' => "{$url}/icon/9.gif",
-            '曇のち時々雨' => "{$url}/icon/10.gif",
-            '曇のち時々雨か雪' => "{$url}/icon/10.gif",
-            '曇のち時々雪' => "{$url}/icon/11.gif",
-            '曇のち一時晴' => "{$url}/icon/9.gif",
-            '曇のち一時雨' => "{$url}/icon/10.gif",
-            '曇のち一時雨か雪' => "{$url}/icon/10.gif",
-            '曇のち一時雪' => "{$url}/icon/11.gif",
-            '曇のち晴' => "{$url}/icon/12.gif",
-            '曇のち雨' => "{$url}/icon/13.gif",
-            '曇のち雨か雪' => "{$url}/icon/13.gif",
-            '曇のち雪' => "{$url}/icon/14.gif",
-            '雨' => "{$url}/icon/15.gif",
-            '雨か雪' => "{$url}/icon/15.gif",
-            '雨時々晴' => "{$url}/icon/16.gif",
-            '雨時々曇' => "{$url}/icon/17.gif",
-            '雨時々雪' => "{$url}/icon/18.gif",
-            '雨一時晴' => "{$url}/icon/16.gif",
-            '雨一時曇' => "{$url}/icon/17.gif",
-            '雨一時雪' => "{$url}/icon/18.gif",
-            '雨のち時々晴' => "{$url}/icon/16.gif",
-            '雨のち時々曇' => "{$url}/icon/17.gif",
-            '雨のち時々雪' => "{$url}/icon/18.gif",
-            '雨のち一時晴' => "{$url}/icon/16.gif",
-            '雨のち一時曇' => "{$url}/icon/17.gif",
-            '雨のち一時雪' => "{$url}/icon/18.gif",
-            '雨のち晴' => "{$url}/icon/19.gif",
-            '雨のち曇' => "{$url}/icon/20.gif",
-            '雨のち雪' => "{$url}/icon/21.gif",
-            '大雨' => "{$url}/icon/22.gif",
-            '暴風雨' => "{$url}/icon/22.gif",
-            '雪' => "{$url}/icon/23.gif",
-            '雪時々晴' => "{$url}/icon/24.gif",
-            '雪時々曇' => "{$url}/icon/25.gif",
-            '雪時々雨' => "{$url}/icon/26.gif",
-            '雪時々雨か雪' => "{$url}/icon/26.gif",
-            '雪一時晴' => "{$url}/icon/24.gif",
-            '雪一時曇' => "{$url}/icon/25.gif",
-            '雪一時雨' => "{$url}/icon/26.gif",
-            '雪一時雨か雪' => "{$url}/icon/26.gif",
-            '雪のち時々晴' => "{$url}/icon/24.gif",
-            '雪のち時々曇' => "{$url}/icon/25.gif",
-            '雪のち時々雨' => "{$url}/icon/26.gif",
-            '雪のち時々雨か雪' => "{$url}/icon/26.gif",
-            '雪のち一時晴' => "{$url}/icon/24.gif",
-            '雪のち一時曇' => "{$url}/icon/25.gif",
-            '雪のち一時雨' => "{$url}/icon/26.gif",
-            '雪のち一時雨か雪' => "{$url}/icon/26.gif",
-            '雪のち晴' => "{$url}/icon/27.gif",
-            '雪のち曇' => "{$url}/icon/28.gif",
-            '雪のち雨' => "{$url}/icon/29.gif",
-            '雪のち雨か雪' => "{$url}/icon/29.gif",
-            '大雪' => "{$url}/icon/30.gif",
-            '暴風雪' => "{$url}/icon/30.gif",
-            'その他' => "{$url}/icon/31.gif"
-        ];
-
 
         /**** 各 ID 定義 ****/
 
         // 数値でない or 6桁ではない or 地点定義に存在しないID
-        if (!is_numeric($id) or strlen($id) != 6 or !isset(WeatherDefinition::AREA['class10s'][$id])) {
+        if (!is_numeric($id) or strlen($id) != 6 or !isset(WeatherDefinition::Areas['class10s'][$id])) {
             return ['error' => 'The specified city ID is invalid.'];
         }
 
         // 地域ID / 地域名（〇〇地方）
         $city_id = (string) $id;
+        $city_point_name = WeatherDefinition::Areas['class10s'][$city_id]['name'];
+
+        // 地域 ID から配列のインデックスを抽出
         $city_index = intval(substr($city_id, 4, 1)) - 1;
         if ($city_index < 0) $city_index = 0;  // 大東島など一部の地域用
-        $city_point_name = WeatherDefinition::AREA['class10s'][$city_id]['name'];
 
         // 都道府県ID / 都道府県名
-        $prefecture_id = (string) WeatherDefinition::AREA['class10s'][$id]['parent'];
-        $prefecture_name = WeatherDefinition::AREA['offices'][$prefecture_id]['name'];
+        $prefecture_id = (string) WeatherDefinition::Areas['class10s'][$id]['parent'];
+        $prefecture_name = WeatherDefinition::Areas['offices'][$prefecture_id]['name'];
 
         // 地方名（九州、東北 など）
         $area_name = Weather::getAreaName($prefecture_id);
@@ -162,7 +74,7 @@ class Weather extends Model
         /**** 気象データから今日・明日・明後日の天気予報を取得 ****/
 
         // API のデータは日付が変わっても 5 時までは更新されないため、自力で昨日の情報を削除したり整形する作業が必要になる
-        $forecast = Weather::getForecast($forecast_data);
+        $forecast = Weather::getForecast($forecast_data, $city_index);
 
 
         /**** 出力する JSON データ ****/
@@ -181,15 +93,15 @@ class Weather extends Model
                 [
                     'date' => $forecast[0]['date'],
                     'dateLabel' => "今日",
-                    'telop' => null,
+                    'telop' => $forecast[0]['telop'],
                     'temperature' => [
                         'min' => [
                             'celsius' => null,
-                            'fahrenheit' => null
+                            'fahrenheit' => null,
                         ],
                         'max' => [
                             'celsius' => null,
-                            'fahrenheit' => null
+                            'fahrenheit' => null,
                         ]
                     ],
                     'chanceOfRain' => [
@@ -199,24 +111,24 @@ class Weather extends Model
                         '18-24' => '--%',
                     ],
                     'image' => [
-                        'title' => null,
-                        'url' => null,
-                        'width' => 50,
-                        'height' => 31
+                        'title' => $forecast[0]['image']['title'],
+                        'url' => $forecast[0]['image']['url'],
+                        'width' => 80,
+                        'height' => 60,
                     ]
                 ],
                 [
                     'date' => $forecast[1]['date'],
                     'dateLabel' => "明日",
-                    'telop' => null,
+                    'telop' => $forecast[1]['telop'],
                     'temperature' => [
                         'min' => [
                             'celsius' => null,
-                            'fahrenheit' => null
+                            'fahrenheit' => null,
                         ],
                         'max' => [
                             'celsius' => null,
-                            'fahrenheit' => null
+                            'fahrenheit' => null,
                         ]
                     ],
                     'chanceOfRain' => [
@@ -226,19 +138,19 @@ class Weather extends Model
                         '18-24' => '--%',
                     ],
                     'image' => [
-                        'title' => null,
-                        'url' => null,
-                        'width' => 50,
-                        'height' => 31
+                        'title' => $forecast[1]['image']['title'],
+                        'url' => $forecast[1]['image']['url'],
+                        'width' => 80,
+                        'height' => 60,
                     ]
                 ],
                 [
-                    'date' => $forecast[2]['date'],
+                    'date' => null,
                     'dateLabel' => "明後日",
                     'telop' => null,
                     'temperature' => [
                         'min' => null,
-                        'max' => null
+                        'max' => null,
                     ],
                     'chanceOfRain' => [
                         '00-06' => '--%',
@@ -249,15 +161,15 @@ class Weather extends Model
                     'image' => [
                         'title' => null,
                         'url' => null,
-                        'width' => 50,
-                        'height' => 31
+                        'width' => 80,
+                        'height' => 60,
                     ]
                 ]
             ],
             'location' => [
                 'city' => $city_name,
                 'area' => $area_name,
-                'prefecture' => $prefecture_name
+                'prefecture' => $prefecture_name,
             ],
             'copyright' => [
                 'link' => "{$url}/",
@@ -267,13 +179,13 @@ class Weather extends Model
                     'height' => 120,
                     'link' => "{$url}/",
                     'url' => "{$url}/logo.png",
-                    'title' => "天気予報 API（livedoor 天気互換）"
+                    'title' => "天気予報 API（livedoor 天気互換）",
                 ],
                 'provider' => [
                     [
                         'link' => "https://www.jma.go.jp/jma/",
                         'name' => "気象庁 Japan Meteorological Agency",
-                        'note' => "気象庁 HP にて配信されている天気予報を json データへ編集しています。"
+                        'note' => "気象庁 HP にて配信されている天気予報を json データへ編集しています。",
                     ]
                 ]
             ]
@@ -322,11 +234,13 @@ class Weather extends Model
     /**
      * 取得した生の気象データから、今日・明日・明後日の天気予報を取得する
      *
-     * @param array $forecast_data
-     * @return array
+     * @param array $forecast_data API から取得した気象データ
+     * @param int $city_index 取得する地域の配列のインデックス
+     * @return array 整形された気象データ
      */
-    private static function getForecast(array $forecast_data): array
+    private static function getForecast(array $forecast_data, int $city_index): array
     {
+        // 定義
         $forecast = [];
 
         // timeDefines の数だけループを回す
@@ -344,15 +258,24 @@ class Weather extends Model
                 continue;
             }
 
+            // 天気コード
+            // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
+            $weathercode = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weatherCodes'][$count];
+
             // データを入れる
             $forecast[$index] = [
                 'date' => $compare_datetime->format('Y-m-d'),
+                'telop' => WeatherDefinition::Telops[$weathercode][3],
+                'image' => [
+                    'title' => WeatherDefinition::Telops[$weathercode][3],  // テロップと共通
+                    'url' => 'https://www.jma.go.jp/bosai/forecast/img/' . WeatherDefinition::Telops[$weathercode][0],  // 気象庁の SVG にリンク
+                ]
             ];
 
             $index++;  // インデックスを足す
         }
 
-        Log::Debug($forecast);
+        clock()->debug($forecast);
 
         return $forecast;
     }
