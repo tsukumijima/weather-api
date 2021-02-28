@@ -74,7 +74,12 @@ class Weather extends Model
         /**** 気象データから今日・明日・明後日の天気予報を取得 ****/
 
         // API のデータは日付が変わっても 5 時までは更新されないため、自力で昨日の情報を削除したり整形する作業が必要になる
+
+        // 天気予報
         $forecast = Weather::getForecast($forecast_data, $city_index);
+
+        // 最高気温・最低気温
+        $temperature = Weather::getTemperature($forecast_data, $city_index);
 
 
         /**** 出力する JSON データ ****/
@@ -83,7 +88,7 @@ class Weather extends Model
             'publicTime' => $forecast_data[0]['reportDatetime'],
             'formattedPublicTime' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
             'title' => "{$prefecture_name} {$city_name} の天気",
-            'link' => "https://www.jma.go.jp/jma/",
+            'link' => "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code={$prefecture_id}",
             'description' => [
                 'text' => "{$overview['headlineText']}\n\n{$overview['text']}",
                 'publicTime' => $overview['reportDatetime'],
@@ -96,12 +101,12 @@ class Weather extends Model
                     'telop' => $forecast[0]['telop'],
                     'temperature' => [
                         'min' => [
-                            'celsius' => null,
-                            'fahrenheit' => null,
+                            'celsius' => $temperature[0]['min']['celsius'],
+                            'fahrenheit' => $temperature[0]['min']['fahrenheit'],
                         ],
                         'max' => [
-                            'celsius' => null,
-                            'fahrenheit' => null,
+                            'celsius' => $temperature[0]['max']['celsius'],
+                            'fahrenheit' => $temperature[0]['max']['fahrenheit'],
                         ]
                     ],
                     'chanceOfRain' => [
@@ -123,12 +128,12 @@ class Weather extends Model
                     'telop' => $forecast[1]['telop'],
                     'temperature' => [
                         'min' => [
-                            'celsius' => null,
-                            'fahrenheit' => null,
+                            'celsius' => $temperature[1]['min']['celsius'],
+                            'fahrenheit' => $temperature[1]['min']['fahrenheit'],
                         ],
                         'max' => [
-                            'celsius' => null,
-                            'fahrenheit' => null,
+                            'celsius' => $temperature[1]['max']['celsius'],
+                            'fahrenheit' => $temperature[1]['max']['fahrenheit'],
                         ]
                     ],
                     'chanceOfRain' => [
@@ -149,8 +154,14 @@ class Weather extends Model
                     'dateLabel' => "明後日",
                     'telop' => $forecast[2]['telop'],
                     'temperature' => [
-                        'min' => null,
-                        'max' => null,
+                        'min' => [
+                            'celsius' => $temperature[2]['min']['celsius'],
+                            'fahrenheit' => $temperature[2]['min']['fahrenheit'],
+                        ],
+                        'max' => [
+                            'celsius' => $temperature[2]['max']['celsius'],
+                            'fahrenheit' => $temperature[2]['max']['fahrenheit'],
+                        ]
                     ],
                     'chanceOfRain' => [
                         '00-06' => '--%',
@@ -287,7 +298,7 @@ class Weather extends Model
                 // 比較対象の時刻
                 $compare_datetime = new DateTimeImmutable($value);
 
-                // 同じ時刻なら終了
+                // 同じ時刻ならインデックスを取得して break
                 if ($compare_datetime->setTime(0,0) == $aftertomorrow_datetime->setTime(0,0)) {
                     $aftertomorrow_index = $key;
                     break;
@@ -313,5 +324,92 @@ class Weather extends Model
         clock()->debug($forecast);
 
         return $forecast;
+    }
+
+
+    /**
+     * 取得した生の気象データから、今日・明日・明後日の気温を取得する
+     *
+     * @param array $forecast_data API から取得した気象データ
+     * @param int $city_index 取得する地域の配列のインデックス
+     * @return array 整形された気象データ
+     */
+    private static function getTemperature(array $forecast_data, int $city_index): array
+    {
+        $temperature = [];
+
+        // TODO: 現在の方法だとあまりにもバグが出るので、もう timeDefines に指定時刻が存在するかでやった方が早い気がする
+        // 指定時刻が存在しなかったら null にしておいたり、後で週間天気予報から持ってきたりする
+
+        $days_datetime = [
+            (new DateTimeImmutable('now')),  // 現在の時刻
+            (new DateTimeImmutable('now'))->modify('+1 days'),  // 明日の時刻
+            (new DateTimeImmutable('now'))->modify('+2 days'),  // 明後日の時刻
+        ];
+
+        $temperature_index_min = [null, null, null];
+        $temperature_index_max = [null, null, null];
+
+        // 最高気温・最低気温の中から今日・明日・明後日の日付を見つけ、インデックスを手に入れる
+        foreach ($forecast_data[0]['timeSeries'][2]['timeDefines'] as $timedefine_index => $timedefine) {
+
+            // 比較対象（処理対象）の時刻
+            $compare_datetime = new DateTimeImmutable($timedefine);
+
+            foreach ($days_datetime as $day_index => $day_datetime) {
+
+                // 最低気温
+                // 同じ時刻ならインデックスを取得して break
+                if ($compare_datetime == $day_datetime->setTime(0,0)) {
+                    $temperature_index_min[$day_index] = $timedefine_index;
+                    break;
+                }
+
+                // 最高気温
+                // 同じ時刻ならインデックスを取得して break
+                if ($compare_datetime == $day_datetime->setTime(9,0)) {
+                    $temperature_index_max[$day_index] = $timedefine_index;
+                    break;
+                }
+            }
+        }
+
+        // インデックスを手に入れたので、インデックスが null でなければアクセスしてデータを取りに行く
+        foreach ($days_datetime as $day_index => $day_datetime) {
+
+            // ネスト長過ぎる
+            $temps = $forecast_data[0]['timeSeries'][2]['areas'][$city_index]['temps'];
+
+            // 現在のループのインデックスの気温のインデックスが null じゃなければ取得を実行（ややこしすぎる）
+            // シーケンス制御みたいになってるのが悪い
+            $temperature[$day_index] = [
+                'min' => [
+                    'celsius' => ($temperature_index_min[$day_index] !== null ?
+                                  $temps[$temperature_index_min[$day_index]] : null),  // 摂氏はそのまま
+                    'fahrenheit' => ($temperature_index_min[$day_index] !== null ?
+                                     strval($temps[$temperature_index_min[$day_index]] * 1.8 + 32) : null),  // 華氏に変換
+                ],
+                'max' => [
+                    'celsius' => ($temperature_index_max[$day_index] !== null ?
+                                  $temps[$temperature_index_max[$day_index]] : null),  // 摂氏はそのまま
+                    'fahrenheit' => ($temperature_index_max[$day_index] !== null ?
+                                     strval($temps[$temperature_index_max[$day_index]] * 1.8 + 32) : null),  // 華氏に変換
+                ]
+            ];
+        }
+                    
+        // 今日の最低気温は常に存在しないのが正しいらしい🤔ので弾く
+        // ダミーの最低気温が入っているとき、最低気温は最高気温と同じ値になるのを利用する（ HP 上では - になってる）
+        // いっそ API に今日の最低気温を含めないでくれ…って気持ち
+        if ($temperature[0]['min']['celsius'] === $temperature[0]['max']['celsius']) {
+            $temperature[0]['min']['celsius'] = null;
+            $temperature[0]['min']['fahrenheit'] = null;
+        }
+
+        // TODO: 明後日の最高気温・最低気温は常に取得できないはずなので、週間天気予報から持ってくる
+
+        clock()->debug($temperature);
+        
+        return $temperature;
     }
 }
