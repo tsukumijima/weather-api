@@ -145,9 +145,9 @@ class Weather extends Model
                     ]
                 ],
                 [
-                    'date' => null,
+                    'date' => $forecast[2]['date'],
                     'dateLabel' => "明後日",
-                    'telop' => null,
+                    'telop' => $forecast[2]['telop'],
                     'temperature' => [
                         'min' => null,
                         'max' => null,
@@ -159,8 +159,8 @@ class Weather extends Model
                         '18-24' => '--%',
                     ],
                     'image' => [
-                        'title' => null,
-                        'url' => null,
+                        'title' => $forecast[2]['image']['title'],
+                        'url' => $forecast[2]['image']['url'],
                         'width' => 80,
                         'height' => 60,
                     ]
@@ -232,7 +232,7 @@ class Weather extends Model
 
 
     /**
-     * 取得した生の気象データから、今日・明日・明後日の天気予報を取得する
+     * 取得した生の気象データから、今日・明日・明後日の天気予報・気温・降水確率を取得する
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_index 取得する地域の配列のインデックス
@@ -240,21 +240,20 @@ class Weather extends Model
      */
     private static function getForecast(array $forecast_data, int $city_index): array
     {
-        // 定義
         $forecast = [];
 
+        // 現在の時刻
+        $today_datetime = new DateTimeImmutable('now');
+
         // timeDefines の数だけループを回す
-        $index = 0;
+        $day_index = 0;
         for ($count = 0; $count < count($forecast_data[0]['timeSeries'][0]['timeDefines']); $count++) {
 
             // 比較対象の時刻
             $compare_datetime = new DateTimeImmutable($forecast_data[0]['timeSeries'][0]['timeDefines'][$count]);
 
-            // 現在の時刻
-            $current_datetime = new DateTimeImmutable('now');
-
             // 比較対象の日付が現在の日付より過去（小さい）ならスキップ
-            if ($compare_datetime->setTime(0,0) < $current_datetime->setTime(0,0)) {
+            if ($compare_datetime->setTime(0,0) < $today_datetime->setTime(0,0)) {
                 continue;
             }
 
@@ -263,7 +262,7 @@ class Weather extends Model
             $weathercode = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weatherCodes'][$count];
 
             // データを入れる
-            $forecast[$index] = [
+            $forecast[$day_index] = [
                 'date' => $compare_datetime->format('Y-m-d'),
                 'telop' => WeatherDefinition::Telops[$weathercode][3],
                 'image' => [
@@ -272,23 +271,47 @@ class Weather extends Model
                 ]
             ];
 
-            $index++;  // インデックスを足す
+            $day_index++;  // インデックスを足す
+        }
+
+        // 明後日の天気が 3 日間予報から取得できない場合（多くの場合、0時～5時の期間）は、週間天気予報からデータを持ってくる
+        // 以下は0時～5時の明後日専用の処理
+        if (!isset($forecast[2])) {
+
+            // 明後日の時刻
+            $aftertomorrow_datetime = $today_datetime->modify('+2 days');
+
+            // 週間天気予報から明後日の日付を見つけ、インデックスを手に入れる
+            foreach ($forecast_data[1]['timeSeries'][0]['timeDefines'] as $key => $value) {
+
+                // 比較対象の時刻
+                $compare_datetime = new DateTimeImmutable($value);
+
+                // 同じ時刻なら終了
+                if ($compare_datetime->setTime(0,0) == $aftertomorrow_datetime->setTime(0,0)) {
+                    $aftertomorrow_index = $key;
+                    break;
+                }
+            }
+
+            // 天気コード
+            // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
+            // 週間天気予報は県（気象台）単位でしか存在しないので、$city_index はここでは使わない
+            $aftertomorrow_weathercode = $forecast_data[1]['timeSeries'][0]['areas'][0]['weatherCodes'][$aftertomorrow_index];
+
+            // データを入れる
+            $forecast[2] = [
+                'date' => $aftertomorrow_datetime->format('Y-m-d'),
+                'telop' => WeatherDefinition::Telops[$aftertomorrow_weathercode][3],
+                'image' => [
+                    'title' => WeatherDefinition::Telops[$aftertomorrow_weathercode][3],  // テロップと共通
+                    'url' => 'https://www.jma.go.jp/bosai/forecast/img/' . WeatherDefinition::Telops[$aftertomorrow_weathercode][0],  // 気象庁の SVG にリンク
+                ]
+            ];
         }
 
         clock()->debug($forecast);
 
         return $forecast;
-    }
-
-
-    /**
-     * 取得した生の気象データから、今日・明日・明後日の気温を取得する
-     *
-     * @param array $forecast_data
-     * @return array
-     */
-    private static function getTemperature(array $forecast_data): array
-    {
-        return [];
     }
 }
