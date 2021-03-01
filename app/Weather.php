@@ -66,9 +66,21 @@ class Weather extends Model
             return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
 
+        // 地域のアメダスID
+        // アメダスは鹿児島のように地域に複数存在する場合があるが、0番目のものを選ぶ
+        $city_amedas_id = WeatherDefinition::ForecastArea[$prefecture_id][$city_index]['amedas'][0];
+
+        // 地域のアメダスのインデックス
+        // なんでもかんでも配列のインデックス探さないといけないの心底つらい
+        foreach ($forecast_data[0]['timeSeries'][2]['areas'] as $area_key => $area) {
+            if ($area['area']['code'] === $city_amedas_id) {
+                $city_amedas_index = $area_key;
+            }
+        }
+
         // 地域名を取得
         // livedoor天気では観測地点の名前が使われており、それに合わせるため気象データの方から取得している
-        $city_name = $forecast_data[0]['timeSeries'][2]['areas'][$city_index]['area']['name'];
+        $city_name = $forecast_data[0]['timeSeries'][2]['areas'][$city_amedas_index]['area']['name'];
 
 
         /**** 気象データから今日・明日・明後日の天気予報を取得 ****/

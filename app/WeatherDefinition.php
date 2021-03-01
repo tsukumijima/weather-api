@@ -18820,6 +18820,14 @@ class WeatherDefinition extends Model
                     '88612'
                 ],
                 'class20' => '4621300'
+            ],
+            [
+                'class10' => '460040',
+                'amedas' => [
+                    '88836',
+                    '88971'
+                ],
+                'class20' => '4622200'
             ]
         ],
         '471000' => [
