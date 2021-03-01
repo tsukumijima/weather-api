@@ -73,8 +73,10 @@ class Weather extends Model
         // 地域のアメダスのインデックス
         // なんでもかんでも配列のインデックス探さないといけないの心底つらい
         foreach ($forecast_data[0]['timeSeries'][2]['areas'] as $area_key => $area) {
+            // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
             if ($area['area']['code'] === $city_amedas_id) {
                 $city_amedas_index = $area_key;
+                break;
             }
         }
 
@@ -91,7 +93,7 @@ class Weather extends Model
         $forecast = Weather::getForecast($forecast_data, $city_index);
 
         // 最高気温・最低気温
-        $temperature = Weather::getTemperature($forecast_data, $city_index);
+        $temperature = Weather::getTemperature($forecast_data, $city_amedas_index);
 
 
         /**** 出力する JSON データ ****/
@@ -343,10 +345,10 @@ class Weather extends Model
      * 取得した生の気象データから、今日・明日・明後日の気温を取得する
      *
      * @param array $forecast_data API から取得した気象データ
-     * @param int $city_index 取得する地域の配列のインデックス
+     * @param int $city_amedas_index 取得する地域のアメダス ID の配列のインデックス
      * @return array 整形された気象データ
      */
-    private static function getTemperature(array $forecast_data, int $city_index): array
+    private static function getTemperature(array $forecast_data, int $city_amedas_index): array
     {
         $temperature = [];
 
@@ -390,7 +392,7 @@ class Weather extends Model
         foreach ($days_datetime as $day_index => $day_datetime) {
 
             // ネスト長過ぎる
-            $temps = $forecast_data[0]['timeSeries'][2]['areas'][$city_index]['temps'];
+            $temps = $forecast_data[0]['timeSeries'][2]['areas'][$city_amedas_index]['temps'];
 
             // 現在のループのインデックスの気温のインデックスが null じゃなければ取得を実行（ややこしすぎる）
             // シーケンス制御みたいになってるのが悪い
