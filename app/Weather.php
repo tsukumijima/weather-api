@@ -80,6 +80,21 @@ class Weather extends Model
             }
         }
 
+        // 地域の週間天気予報用のインデックス
+        // ほとんどは県あたりの観測地点は1箇所しかないが、小笠原諸島がある東京、奄美地方のある鹿児島などでは複数存在する
+        // なんでもかんでも配列のインデックス探さないといけないの心底つらい
+        foreach ($forecast_data[1]['timeSeries'][1]['areas'] as $area_key => $area) {
+            // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
+            if ($area['area']['code'] === $city_amedas_id) {
+                $city_week_index = $area_key;
+                break;
+            }
+        }
+        // 取得できなかった場合（3日間天気でしか観測を行っていない地点）は 0 とし、その都道府県のメインの観測地点を利用する
+        if (!isset($city_week_index)) {
+            $city_week_index = 0;
+        }
+
         // 地域名を取得
         // livedoor天気では観測地点の名前が使われており、それに合わせるため気象データの方から取得している
         $city_name = $forecast_data[0]['timeSeries'][2]['areas'][$city_amedas_index]['area']['name'];
@@ -90,10 +105,10 @@ class Weather extends Model
         // API のデータは日付が変わっても 5 時までは更新されないため、自力で昨日の情報を削除したり整形する作業が必要になる
 
         // 天気予報
-        $forecast = Weather::getForecast($forecast_data, $city_index);
+        $forecast = Weather::getForecast($forecast_data, $city_index, $city_week_index);
 
         // 最高気温・最低気温
-        $temperature = Weather::getTemperature($forecast_data, $city_amedas_index);
+        $temperature = Weather::getTemperature($forecast_data, $city_amedas_index, $city_week_index);
 
 
         /**** 出力する JSON データ ****/
@@ -128,6 +143,10 @@ class Weather extends Model
                         '06-12' => '--%',
                         '12-18' => '--%',
                         '18-24' => '--%',
+                        'T00_06' => '--%',
+                        'T06_12' => '--%',
+                        'T12_18' => '--%',
+                        'T18_24' => '--%',
                     ],
                     'image' => [
                         'title' => $forecast[0]['image']['title'],
@@ -155,6 +174,10 @@ class Weather extends Model
                         '06-12' => '--%',
                         '12-18' => '--%',
                         '18-24' => '--%',
+                        'T00_06' => '--%',
+                        'T06_12' => '--%',
+                        'T12_18' => '--%',
+                        'T18_24' => '--%',
                     ],
                     'image' => [
                         'title' => $forecast[1]['image']['title'],
@@ -182,6 +205,10 @@ class Weather extends Model
                         '06-12' => '--%',
                         '12-18' => '--%',
                         '18-24' => '--%',
+                        'T00_06' => '--%',
+                        'T06_12' => '--%',
+                        'T12_18' => '--%',
+                        'T18_24' => '--%',
                     ],
                     'image' => [
                         'title' => $forecast[2]['image']['title'],
@@ -261,9 +288,10 @@ class Weather extends Model
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_index 取得する地域の配列のインデックス
+     * @param int $city_week_index 取得する地域の配列のインデックス（週間天気予報用）
      * @return array 整形された気象データ
      */
-    private static function getForecast(array $forecast_data, int $city_index): array
+    private static function getForecast(array $forecast_data, int $city_index, int $city_week_index): array
     {
         $forecast = [];
 
@@ -322,7 +350,7 @@ class Weather extends Model
             // 天気コード
             // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
             // 週間天気予報は県（気象台）単位でしか存在しないので、$city_index はここでは使わない
-            $aftertomorrow_weathercode = $forecast_data[1]['timeSeries'][0]['areas'][0]['weatherCodes'][$aftertomorrow_index];
+            $aftertomorrow_weathercode = $forecast_data[1]['timeSeries'][0]['areas'][$city_week_index]['weatherCodes'][$aftertomorrow_index];
 
             // データを入れる
             $forecast[2] = [
@@ -346,9 +374,10 @@ class Weather extends Model
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_amedas_index 取得する地域のアメダス ID の配列のインデックス
+     * @param int $city_week_index 取得する地域の配列のインデックス（週間天気予報用）
      * @return array 整形された気象データ
      */
-    private static function getTemperature(array $forecast_data, int $city_amedas_index): array
+    private static function getTemperature(array $forecast_data, int $city_amedas_index, int $city_week_index): array
     {
         $temperature = [];
 
@@ -421,7 +450,7 @@ class Weather extends Model
         }
 
         // 明後日の最高気温・最低気温は常に取得できないはずなので、週間天気予報から持ってくる
-        // 明日分も0時～5時は取得できない事が多い
+        // 明日分も0時～5時は取得できないと思われる
         foreach ($temperature as $temperature_key => $temperature_value) {
 
             // その日の最高気温・最低気温ともに存在しない
@@ -447,8 +476,8 @@ class Weather extends Model
                 if (isset($aftertomorrow_index)) {
 
                     // 最高気温・最低気温
-                    $aftertomorrow_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][0]['tempsMin'][$aftertomorrow_index];
-                    $aftertomorrow_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][0]['tempsMax'][$aftertomorrow_index];
+                    $aftertomorrow_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMin'][$aftertomorrow_index];
+                    $aftertomorrow_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMax'][$aftertomorrow_index];
         
                     // データを入れる
                     $temperature[$temperature_key] = [
