@@ -420,7 +420,50 @@ class Weather extends Model
             $temperature[0]['min']['fahrenheit'] = null;
         }
 
-        // TODO: 明後日の最高気温・最低気温は常に取得できないはずなので、週間天気予報から持ってくる
+        // 明後日の最高気温・最低気温は常に取得できないはずなので、週間天気予報から持ってくる
+        // 明日分も0時～5時は取得できない事が多い
+        foreach ($temperature as $temperature_key => $temperature_value) {
+
+            // その日の最高気温・最低気温ともに存在しない
+            if ($temperature_value['min']['celsius'] === null and $temperature_value['max']['celsius'] === null) {
+
+                // 明後日の時刻
+                $aftertomorrow_datetime = $days_datetime[2];
+    
+                // 週間天気予報から明後日の日付を見つけ、インデックスを手に入れる
+                foreach ($forecast_data[1]['timeSeries'][1]['timeDefines'] as $key => $value) {
+    
+                    // 比較対象の時刻
+                    $compare_datetime = new DateTimeImmutable($value);
+    
+                    // 同じ時刻ならインデックスを取得して break
+                    if ($compare_datetime->setTime(0,0) == $aftertomorrow_datetime->setTime(0,0)) {
+                        $aftertomorrow_index = $key;
+                        break;
+                    }
+                }
+   
+                // インデックスが定義されている場合だけ
+                if (isset($aftertomorrow_index)) {
+
+                    // 最高気温・最低気温
+                    $aftertomorrow_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][0]['tempsMin'][$aftertomorrow_index];
+                    $aftertomorrow_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][0]['tempsMax'][$aftertomorrow_index];
+        
+                    // データを入れる
+                    $temperature[$temperature_key] = [
+                        'min' => [
+                            'celsius' => $aftertomorrow_tempmin,  // 摂氏はそのまま
+                            'fahrenheit' => strval($aftertomorrow_tempmin * 1.8 + 32),  // 華氏に変換
+                        ],
+                        'max' => [
+                            'celsius' => $aftertomorrow_tempmax,  // 摂氏はそのまま
+                            'fahrenheit' => strval($aftertomorrow_tempmax * 1.8 + 32),  // 華氏に変換
+                        ]
+                    ];
+                }
+            }
+        }
 
         clock()->debug($temperature);
         
