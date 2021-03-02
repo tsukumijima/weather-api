@@ -447,38 +447,38 @@ class Weather extends Model
             // その日の最高気温・最低気温ともに存在しない
             if ($temperature_value['min']['celsius'] === null and $temperature_value['max']['celsius'] === null) {
 
-                // 明後日の時刻
-                $aftertomorrow_datetime = $days_datetime[2];
+                // 週間天気予報の時刻
+                $weekly_datetime = $days_datetime[$temperature_key];
     
-                // 週間天気予報から明後日の日付を見つけ、インデックスを手に入れる
+                // 週間天気予報から目当ての日付を見つけ、インデックスを手に入れる
                 foreach ($forecast_data[1]['timeSeries'][1]['timeDefines'] as $key => $value) {
     
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
     
                     // 同じ時刻ならインデックスを取得して break
-                    if ($compare_datetime->setTime(0,0) == $aftertomorrow_datetime->setTime(0,0)) {
-                        $aftertomorrow_index = $key;
+                    if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
+                        $weekly_index = $key;
                         break;
                     }
                 }
    
                 // インデックスが定義されている場合だけ
-                if (isset($aftertomorrow_index)) {
+                if (isset($weekly_index)) {
 
                     // 最高気温・最低気温
-                    $aftertomorrow_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMin'][$aftertomorrow_index];
-                    $aftertomorrow_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMax'][$aftertomorrow_index];
+                    $weekly_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMin'][$weekly_index];
+                    $weekly_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMax'][$weekly_index];
         
                     // データを入れる
                     $temperature[$temperature_key] = [
                         'min' => [
-                            'celsius' => $aftertomorrow_tempmin,  // 摂氏はそのまま
-                            'fahrenheit' => strval($aftertomorrow_tempmin * 1.8 + 32),  // 華氏に変換
+                            'celsius' => $weekly_tempmin,  // 摂氏はそのまま
+                            'fahrenheit' => strval($weekly_tempmin * 1.8 + 32),  // 華氏に変換
                         ],
                         'max' => [
-                            'celsius' => $aftertomorrow_tempmax,  // 摂氏はそのまま
-                            'fahrenheit' => strval($aftertomorrow_tempmax * 1.8 + 32),  // 華氏に変換
+                            'celsius' => $weekly_tempmax,  // 摂氏はそのまま
+                            'fahrenheit' => strval($weekly_tempmax * 1.8 + 32),  // 華氏に変換
                         ]
                     ];
                 }
@@ -566,6 +566,55 @@ class Weather extends Model
                 'T12_18' => ($chanceofrain_index['T12_18'][$day_index] !== null ? $pops[$chanceofrain_index['T12_18'][$day_index]].'%' : '--%'),
                 'T18_24' => ($chanceofrain_index['T18_24'][$day_index] !== null ? $pops[$chanceofrain_index['T18_24'][$day_index]].'%' : '--%'),
             ];
+        }
+
+        // 明後日の降水確率は常に取得できないはずなので、週間天気予報から持ってくる
+        // 明日分も0時～5時は取得できないと思われる
+        foreach ($chanceofrain as $chanceofrain_key => $chanceofrain_value) {
+
+            // その日の降水確率がすべて存在しない
+            if ($chanceofrain_value['T00_06'] === '--%' and
+                $chanceofrain_value['T06_12'] === '--%' and
+                $chanceofrain_value['T12_18'] === '--%' and
+                $chanceofrain_value['T18_24'] === '--%') {
+
+                // 週間天気予報の時刻
+                $weekly_datetime = $days_datetime[$chanceofrain_key];
+    
+                // 週間天気予報から目当ての日付を見つけ、インデックスを手に入れる
+                foreach ($forecast_data[1]['timeSeries'][0]['timeDefines'] as $key => $value) {
+    
+                    // 比較対象の時刻
+                    $compare_datetime = new DateTimeImmutable($value);
+    
+                    // 同じ時刻ならインデックスを取得して break
+                    if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
+                        $weekly_index = $key;
+                        break;
+                    }
+                }
+   
+                // インデックスが定義されている場合だけ
+                if (isset($weekly_index)) {
+
+                    // 降水確率
+                    // 週間天気予報だと時間ごとの詳細な降水確率は取得できないので、全て同じ値に設定する
+                    $weekly_chanceofrain_base = $forecast_data[1]['timeSeries'][0]['areas'][$city_week_index]['pops'][$weekly_index];
+                    
+                    // 降水確率が空でなければ
+                    // 最初の要素の降水確率は '' になるらしい
+                    if ($weekly_chanceofrain_base !== '') {
+        
+                        // データを入れる
+                        $chanceofrain[$chanceofrain_key] = [
+                            'T00_06' => $weekly_chanceofrain_base.'%',
+                            'T06_12' => $weekly_chanceofrain_base.'%',
+                            'T12_18' => $weekly_chanceofrain_base.'%',
+                            'T18_24' => $weekly_chanceofrain_base.'%',
+                        ];
+                    }
+                }
+            }
         }
 
         clock()->debug($chanceofrain);
