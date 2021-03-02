@@ -86,13 +86,13 @@ class Weather extends Model
         foreach ($forecast_data[1]['timeSeries'][1]['areas'] as $area_key => $area) {
             // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
             if ($area['area']['code'] === $city_amedas_id) {
-                $city_week_index = $area_key;
+                $city_weekly_index = $area_key;
                 break;
             }
         }
         // 取得できなかった場合（3日間天気でしか観測を行っていない地点）は 0 とし、その都道府県のメインの観測地点を利用する
-        if (!isset($city_week_index)) {
-            $city_week_index = 0;
+        if (!isset($city_weekly_index)) {
+            $city_weekly_index = 0;
         }
 
         // 地域名を取得
@@ -105,13 +105,13 @@ class Weather extends Model
         // API のデータは日付が変わっても 5 時までは更新されないため、自力で昨日の情報を削除したり整形する作業が必要になる
 
         // 天気予報
-        $forecast = Weather::getForecast($forecast_data, $city_index, $city_week_index);
+        $forecast = Weather::getForecast($forecast_data, $city_index, $city_weekly_index);
 
         // 最高気温・最低気温
-        $temperature = Weather::getTemperature($forecast_data, $city_amedas_index, $city_week_index);
+        $temperature = Weather::getTemperature($forecast_data, $city_amedas_index, $city_weekly_index);
 
         // 降水確率
-        $chanceofrain = Weather::getChanceOfRain($forecast_data, $city_index, $city_week_index);
+        $chanceofrain = Weather::getChanceOfRain($forecast_data, $city_index, $city_weekly_index);
 
 
         /**** 出力する JSON データ ****/
@@ -280,79 +280,103 @@ class Weather extends Model
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_index 取得する地域の配列のインデックス
-     * @param int $city_week_index 取得する地域の配列のインデックス（週間天気予報用）
+     * @param int $city_weekly_index 取得する地域の配列のインデックス（週間天気予報用）
      * @return array 整形された気象データ
      */
-    private static function getForecast(array $forecast_data, int $city_index, int $city_week_index): array
+    private static function getForecast(array $forecast_data, int $city_index, int $city_weekly_index): array
     {
         $forecast = [];
 
-        // 現在の時刻
-        $today_datetime = new DateTimeImmutable('now');
+        $days_datetime = [
+            (new DateTimeImmutable('now')),  // 現在の時刻
+            (new DateTimeImmutable('now'))->modify('+1 days'),  // 明日の時刻
+            (new DateTimeImmutable('now'))->modify('+2 days'),  // 明後日の時刻
+        ];
 
-        // timeDefines の数だけループを回す
-        $day_index = 0;
-        for ($count = 0; $count < count($forecast_data[0]['timeSeries'][0]['timeDefines']); $count++) {
+        // 今日・明日・明後日の天気予報が載っている配列のインデックスを格納
+        $forecast_index = [null, null, null];
 
-            // 比較対象の時刻
-            $compare_datetime = new DateTimeImmutable($forecast_data[0]['timeSeries'][0]['timeDefines'][$count]);
+        // timeDefines の中から今日・明日・明後日の日付を見つけ、インデックスを手に入れる
+        // 見つからなかったら既定値の null になる
+        foreach ($forecast_data[0]['timeSeries'][0]['timeDefines'] as $timedefine_index => $timedefine) {
 
-            // 比較対象の日付が現在の日付より過去（小さい）ならスキップ
-            if ($compare_datetime->setTime(0,0) < $today_datetime->setTime(0,0)) {
-                continue;
+            // 比較対象（処理対象）の時刻
+            $compare_datetime = new DateTimeImmutable($timedefine);
+
+            foreach ($days_datetime as $day_index => $day_datetime) {
+
+                // 同じ時刻ならインデックスを取得して抜ける
+                if ($compare_datetime->setTime(0,0) == $day_datetime->setTime(0,0)) {
+                    $forecast_index[$day_index] = $timedefine_index;
+                    break;
+                }
             }
+        }
+
+        // インデックスを手に入れたので、インデックスが null でなければアクセスしてデータを取りに行く
+        foreach ($days_datetime as $day_index => $day_datetime) {
 
             // 天気コード
             // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
-            $weathercode = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weatherCodes'][$count];
-
+            $weathercodes = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weatherCodes'];
+            $weathercode = ($forecast_index[$day_index] !== null ? $weathercodes[$forecast_index[$day_index]] : null);
+            
             // データを入れる
             $forecast[$day_index] = [
-                'date' => $compare_datetime->format('Y-m-d'),
-                'telop' => WeatherDefinition::Telops[$weathercode][3],
+                'date' => $day_datetime->format('Y-m-d'),
+                'telop' => ($weathercode !== null ? WeatherDefinition::Telops[$weathercode][3]: null),
                 'image' => [
-                    'title' => WeatherDefinition::Telops[$weathercode][3],  // テロップと共通
-                    'url' => 'https://www.jma.go.jp/bosai/forecast/img/' . WeatherDefinition::Telops[$weathercode][0],  // 気象庁の SVG にリンク
+                    // テロップと共通
+                    'title' => ($weathercode !== null ? WeatherDefinition::Telops[$weathercode][3]: null),
+                    // 気象庁の SVG にリンク
+                    'url' => ($weathercode !== null ? 'https://www.jma.go.jp/bosai/forecast/img/' . WeatherDefinition::Telops[$weathercode][0]: null),
                 ]
             ];
-
-            $day_index++;  // インデックスを足す
         }
 
         // 明後日の天気が 3 日間予報から取得できない場合（多くの場合、0時～5時の期間）は、週間天気予報からデータを持ってくる
         // 以下は0時～5時の明後日専用の処理
-        if (!isset($forecast[2])) {
+        foreach ($forecast as $forecast_key => $forecast_value) {
 
-            // 明後日の時刻
-            $aftertomorrow_datetime = $today_datetime->modify('+2 days');
+            // その日の天気予報がすべて存在しない
+            if ($forecast_value['telop'] === null) {
 
-            // 週間天気予報から明後日の日付を見つけ、インデックスを手に入れる
-            foreach ($forecast_data[1]['timeSeries'][0]['timeDefines'] as $key => $value) {
+                // 週間天気予報の時刻
+                $weekly_datetime = $days_datetime[$forecast_key];
+    
+                // 週間天気予報から目当ての日付を見つけ、インデックスを手に入れる
+                foreach ($forecast_data[1]['timeSeries'][0]['timeDefines'] as $key => $value) {
+    
+                    // 比較対象の時刻
+                    $compare_datetime = new DateTimeImmutable($value);
+    
+                    // 同じ時刻ならインデックスを取得して抜ける
+                    if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
+                        $weekly_index = $key;
+                        break;
+                    }
+                }
+   
+                // インデックスが定義されている場合だけ
+                if (isset($weekly_index)) {
 
-                // 比較対象の時刻
-                $compare_datetime = new DateTimeImmutable($value);
-
-                // 同じ時刻ならインデックスを取得して break
-                if ($compare_datetime->setTime(0,0) == $aftertomorrow_datetime->setTime(0,0)) {
-                    $aftertomorrow_index = $key;
-                    break;
+                    // 天気コード
+                    // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
+                    $weathercode = $forecast_data[1]['timeSeries'][0]['areas'][$city_weekly_index]['weatherCodes'][$weekly_index];
+            
+                    // データを入れる
+                    $forecast[$day_index] = [
+                        'date' => $days_datetime[$forecast_key]->format('Y-m-d'),
+                        'telop' => WeatherDefinition::Telops[$weathercode][3],
+                        'image' => [
+                            // テロップと共通
+                            'title' => WeatherDefinition::Telops[$weathercode][3],
+                            // 気象庁の SVG にリンク
+                            'url' => 'https://www.jma.go.jp/bosai/forecast/img/' . WeatherDefinition::Telops[$weathercode][0],
+                        ]
+                    ];
                 }
             }
-
-            // 天気コード
-            // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
-            // 週間天気予報は県（気象台）単位でしか存在しないので、$city_index はここでは使わない
-            $aftertomorrow_weathercode = $forecast_data[1]['timeSeries'][0]['areas'][$city_week_index]['weatherCodes'][$aftertomorrow_index];
-
-            // データを入れる
-            $forecast[2] = [
-                'date' => $aftertomorrow_datetime->format('Y-m-d'),
-                'telop' => WeatherDefinition::Telops[$aftertomorrow_weathercode][3],
-                'image' => [
-                    'title' => WeatherDefinition::Telops[$aftertomorrow_weathercode][3],  // テロップと共通
-                    'url' => 'https://www.jma.go.jp/bosai/forecast/img/' . WeatherDefinition::Telops[$aftertomorrow_weathercode][0],  // 気象庁の SVG にリンク
-                ]
-            ];
         }
 
         clock()->debug($forecast);
@@ -366,10 +390,10 @@ class Weather extends Model
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_amedas_index 取得する地域のアメダス ID の配列のインデックス
-     * @param int $city_week_index 取得する地域の配列のインデックス（週間天気予報用）
+     * @param int $city_weekly_index 取得する地域の配列のインデックス（週間天気予報用）
      * @return array 整形された気象データ
      */
-    private static function getTemperature(array $forecast_data, int $city_amedas_index, int $city_week_index): array
+    private static function getTemperature(array $forecast_data, int $city_amedas_index, int $city_weekly_index): array
     {
         $temperature = [];
 
@@ -393,14 +417,14 @@ class Weather extends Model
             foreach ($days_datetime as $day_index => $day_datetime) {
 
                 // 最低気温
-                // 同じ時刻ならインデックスを取得して break
+                // 同じ時刻ならインデックスを取得して抜ける
                 if ($compare_datetime == $day_datetime->setTime(0,0)) {
                     $temperature_index_min[$day_index] = $timedefine_index;
                     break;
                 }
 
                 // 最高気温
-                // 同じ時刻ならインデックスを取得して break
+                // 同じ時刻ならインデックスを取得して抜ける
                 if ($compare_datetime == $day_datetime->setTime(9,0)) {
                     $temperature_index_max[$day_index] = $timedefine_index;
                     break;
@@ -456,7 +480,7 @@ class Weather extends Model
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
     
-                    // 同じ時刻ならインデックスを取得して break
+                    // 同じ時刻ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
                         break;
@@ -467,8 +491,8 @@ class Weather extends Model
                 if (isset($weekly_index)) {
 
                     // 最高気温・最低気温
-                    $weekly_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMin'][$weekly_index];
-                    $weekly_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][$city_week_index]['tempsMax'][$weekly_index];
+                    $weekly_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][$city_weekly_index]['tempsMin'][$weekly_index];
+                    $weekly_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][$city_weekly_index]['tempsMax'][$weekly_index];
         
                     // データを入れる
                     $temperature[$temperature_key] = [
@@ -496,10 +520,10 @@ class Weather extends Model
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_index 取得する地域の配列のインデックス
-     * @param int $city_week_index 取得する地域の配列のインデックス（週間天気予報用）
+     * @param int $city_weekly_index 取得する地域の配列のインデックス（週間天気予報用）
      * @return array 整形された気象データ
      */
-    private static function getChanceOfRain(array $forecast_data, int $city_index, int $city_week_index): array
+    private static function getChanceOfRain(array $forecast_data, int $city_index, int $city_weekly_index): array
     {
         $chanceofrain = [];
 
@@ -518,7 +542,7 @@ class Weather extends Model
         ];
 
         // timeDefines の中から今日・明日・明後日の日付を見つけ、インデックスを手に入れる
-        // 最高気温/最低気温同様、降水確率は今日分明日分しかないし今日分ｎ降水確率も過去のは存在しないのでこうせざるを得ない
+        // 最高気温/最低気温同様、降水確率は今日分明日分しかないし今日分の降水確率も過去のは存在しないのでこうせざるを得ない
         // 見つからなかったら既定値の null になる
         foreach ($forecast_data[0]['timeSeries'][1]['timeDefines'] as $timedefine_index => $timedefine) {
 
@@ -587,7 +611,7 @@ class Weather extends Model
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
     
-                    // 同じ時刻ならインデックスを取得して break
+                    // 同じ時刻ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
                         break;
@@ -599,18 +623,18 @@ class Weather extends Model
 
                     // 降水確率
                     // 週間天気予報だと時間ごとの詳細な降水確率は取得できないので、全て同じ値に設定する
-                    $weekly_chanceofrain_base = $forecast_data[1]['timeSeries'][0]['areas'][$city_week_index]['pops'][$weekly_index];
+                    $weekly_chanceofrain = $forecast_data[1]['timeSeries'][0]['areas'][$city_weekly_index]['pops'][$weekly_index];
                     
                     // 降水確率が空でなければ
                     // 最初の要素の降水確率は '' になるらしい
-                    if ($weekly_chanceofrain_base !== '') {
+                    if ($weekly_chanceofrain !== '') {
         
                         // データを入れる
                         $chanceofrain[$chanceofrain_key] = [
-                            'T00_06' => $weekly_chanceofrain_base.'%',
-                            'T06_12' => $weekly_chanceofrain_base.'%',
-                            'T12_18' => $weekly_chanceofrain_base.'%',
-                            'T18_24' => $weekly_chanceofrain_base.'%',
+                            'T00_06' => $weekly_chanceofrain.'%',
+                            'T06_12' => $weekly_chanceofrain.'%',
+                            'T12_18' => $weekly_chanceofrain.'%',
+                            'T18_24' => $weekly_chanceofrain.'%',
                         ];
                     }
                 }
