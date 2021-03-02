@@ -66,17 +66,21 @@ class Weather extends Model
             return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
 
-        // 地域のアメダスID
-        // アメダスは鹿児島のように地域に複数存在する場合があるが、0番目のものを選ぶ
-        $city_amedas_id = WeatherDefinition::ForecastArea[$prefecture_id][$city_index]['amedas'][0];
+        // アメダスは鹿児島のように地域に複数存在する場合があり、また新居浜（愛媛県）: 380020 のように
+        // 0 番目に存在するアメダス ID と実際に運用されているアメダス ID が異なる場合があるため、念のためこっちも回す
+        foreach (WeatherDefinition::ForecastArea[$prefecture_id][$city_index]['amedas'] as $amedas_id) {
 
-        // 地域のアメダスのインデックス
-        // なんでもかんでも配列のインデックス探さないといけないの心底つらい
-        foreach ($forecast_data[0]['timeSeries'][2]['areas'] as $area_key => $area) {
-            // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
-            if ($area['area']['code'] === $city_amedas_id) {
-                $city_amedas_index = $area_key;
-                break;
+            // 地域のアメダスID
+            $city_amedas_id = $amedas_id;
+    
+            // 地域のアメダスのインデックス
+            // なんでもかんでも配列のインデックス探さないといけないの心底つらい
+            foreach ($forecast_data[0]['timeSeries'][2]['areas'] as $area_key => $area) {
+                // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
+                if ($area['area']['code'] === $city_amedas_id) {
+                    $city_amedas_index = $area_key;
+                    break 2;  // 親ループも抜ける
+                }
             }
         }
 
@@ -122,9 +126,11 @@ class Weather extends Model
             'title' => "{$prefecture_name} {$city_name} の天気",
             'link' => "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code={$prefecture_id}",
             'description' => [
-                'text' => "{$overview['headlineText']}\n\n{$overview['text']}",
                 'publicTime' => $overview['reportDatetime'],
-                'formattedPublicTime' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s')
+                'formattedPublicTime' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s'),
+                'headlineText' => $overview['headlineText'],
+                'bodyText' => $overview['text'],
+                'text' => "{$overview['headlineText']}\n\n{$overview['text']}",
             ],
             'forecasts' => [
                 [
