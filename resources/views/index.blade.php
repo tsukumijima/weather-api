@@ -122,8 +122,8 @@
         </p>
 
         <p class="mb-0">
-          <span class="text-danger font-weight-bold"><u>気象庁 HP のリニューアルに暫定的に対応しました。</u> 天気予報と最高気温・最低気温のみの対応で、現状降水確率は未対応です。</span><br>
-          <span class="text-danger">気象データ取得が API 化されたことで細かい挙動が変更になっていますが、ドキュメントの方の更新が追いついていません。レスポンスデータは互換を保っているつもりですが、あらかじめご了承ください。</span><br>
+          <span class="text-danger font-weight-bold"><u>気象庁 HP のリニューアルに対応しました。</u> また、気象台名、天気詳細、見出し/本文のみの天気概況文、一時細分区域名のプロパティを新たに追加しました。</span>
+          <span class="text-danger">気象データ取得が API 化されたことで細かい挙動が変更になっていますが、ドキュメントの方の更新が終わっていません。レスポンスデータは livedoor 天気にて用意されていたプロパティに関しては互換を保っていますが、あらかじめご了承ください。</span><br>
         </p>
 
       </div>
@@ -132,7 +132,7 @@
 
   <div id="changes-notes" class="container mt-4 px-2 px-lg-3">
     <div class="card">
-      <h2 class="card-header font-weight-bold"><i class="fas fa-exclamation-circle"></i>変更点・注意事項</h2>
+      <h2 class="card-header font-weight-bold"><i class="fas fa-exclamation-circle"></i>変更点・注意事項（情報が古くなっています）</h2>
       <div class="card-body p-sm-4">
 
         <ul class="mb-0">
@@ -181,9 +181,9 @@
       <div class="card-body p-sm-4 pb-4">
         <div>
           <p>
-            JSONデータをリクエストする際のベースとなるURLは以下になります。<br>
+            JSON データをリクエストする際のベースとなる URL は以下になります。<br>
             <span style="color:#d00;"><strong>{{ url('/') }}/api/forecast</strong></span><br>
-            このURLに下の表のパラメータを加え、実際にリクエストします。
+            この URL に下の表のパラメータを加え、実際にリクエストします。
           </p>
           
           <table class="table">
@@ -195,7 +195,7 @@
               <th>city</th>
               <td>
                 地域別に定義された ID 番号を表します。<br>
-                リクエストする地域と ID の対応は、livedoor 天気で使われていた <a href="{{ url('/') }}/primary_area.xml" target="_blank">全国の地点定義表</a> 内で<br>「1次細分区（cityタグ）」の ID をご参照ください。（例・佐賀県 伊万里 = 410020 ）
+                リクエストする地域と ID の対応は、livedoor 天気で使われていた <a href="{{ url('/') }}/primary_area.xml" target="_blank">全国の地点定義表</a> 内で<br>「一次細分区域（cityタグ）」の ID をご参照ください。（例・佐賀県 伊万里 = 410020 ）
               </td>
             </tr>
           </table>
@@ -203,8 +203,8 @@
           <div class="column d-inline-block px-4 py-3" style="border: 1px solid #dee2e6; width: 100%;">
             <strong>（例）「福岡県・久留米の天気」を取得する場合</strong><br>
             <div>
-              下記 URL にアクセスして JSON データを取得します。HTTP でのアクセスも可能です。<br>
-              基本 URL + 久留米の ID（400040）
+              下記 URL にアクセスして JSON データを取得します。http:// でのアクセスも可能です。<br>
+              基本 URL + 久留米の ID (400040)
             </div>
             <a href="{{ url('/') }}/api/forecast/city/400040" target="_blank">{{ url('/') }}/api/forecast/city/400040</a>
             <div>
@@ -222,7 +222,10 @@
       <h2 class="card-header font-weight-bold"><i class="fas fa-reply"></i>レスポンスフィールド</h2>
       <div class="card-body p-sm-4 pb-4">
 
-      <p>取得したJSONデータは以下の定義に基づいて構成されています。(プロパティ名は順不同)</p>
+        <p>
+          取得した JSON データは以下の定義に基づいて構成されています（プロパティ名は順不同）。<br>
+          <u>下線</u> の項目はこの API で新たに追加されたプロパティです。<br>
+        </p>
   
         <table class="table mt-4" cellpadding="0" cellspacing="0" class="normal">
           <tr>
@@ -234,8 +237,12 @@
             <td class="tdline">予報の発表日時（ ISO8601 形式 / 例・2020-09-01T05:00:00+09:00 ）</td>
           </tr>
           <tr>
-            <th class="thline">publicTime_format</th>
+            <th class="thline"><u>formattedPublicTime</u></th>
             <td class="tdline">予報の発表日時（例・2020/09/01 05:00:00 ）</td>
+          </tr>
+          <tr>
+            <th class="thline"><u>publishingOffice</u></th>
+            <td class="tdline">予報を発表した気象台の名前（例・福岡管区気象台）</td>
           </tr>
           <tr>
             <th class="thline">title</th>
@@ -243,7 +250,7 @@
           </tr>
           <tr>
             <th class="thline">link</th>
-            <td class="tdline">リクエストされたデータの地域に該当する気象庁 HP 天気予報の URL</td>
+            <td class="tdline">リクエストされたデータの地域に該当する気象庁 HP の天気予報の URL</td>
           </tr>
           <tr>
             <th class="thline">description</th>
@@ -255,16 +262,24 @@
                   <th class="title" width="98%">内容</th>
                 </tr>
                 <tr>
-                  <th class="thline">text</th>
-                  <td class="tdline">天気概況文</td>
-                </tr>
-                <tr>
                   <th class="thline">publicTime</th>
                   <td class="tdline">天気概況文の発表時刻（ ISO8601 形式 / 例・2020-09-01T04:52:00+09:00 ）</td>
                 </tr>
                 <tr>
-                  <th class="thline">publicTime_format</th>
+                  <th class="thline"><u>formattedPublicTime</u></th>
                   <td class="tdline">天気概況文の発表時刻（例・2020/09/01 04:52:00 ）</td>
+                </tr>
+                <tr>
+                  <th class="thline"><u>headlineText</u></th>
+                  <td class="tdline">天気概況文（見出しのみ）</td>
+                </tr>
+                <tr>
+                  <th class="thline"><u>bodyText</u></th>
+                  <td class="tdline">天気概況文（本文のみ）</td>
+                </tr>
+                <tr>
+                  <th class="thline">text</th>
+                  <td class="tdline">天気概況文</td>
                 </tr>
               </table>
             </td>
@@ -293,6 +308,33 @@
                 </tr>
                 
                 <tr>
+                  <th class="thline"><u>detail</u></th>
+                  <td class="tdline">
+                    <div style="margin-bottom: 12px;">
+                      天気詳細<br>
+                    </div>
+                    <table cellpadding="0" cellspacing="0" width="100%" class="tableline">
+                      <tr>
+                        <th class="title" nowrap>プロパティ名</th>
+                        <th class="title" width="98%">内容</th>
+                      </tr>
+                      <tr>
+                        <th class="thline">weather</th>
+                        <td class="tdline">詳細な天気情報</td>
+                      </tr>
+                      <tr>
+                        <th class="thline">wind</th>
+                        <td class="tdline">風の強さ</td>
+                      </tr>
+                      <tr>
+                        <th class="thline">wave</th>
+                        <td class="tdline">波の高さ（海沿いの地域のみ）</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <tr>
                   <th class="thline">temperature</th>
                   <td class="tdline">
                     <div style="margin-bottom: 12px;">
@@ -317,11 +359,10 @@
                 </tr>
                 
                 <tr>
-                  <th class="thline">chanceOfRain</th>
+                  <th class="thline"><u>chanceOfRain</u></th>
                   <td class="tdline">
                     <div style="margin-bottom: 12px;">
-                      降水確率（明後日は取得できず、常に --% になります）<br>
-                      T00_06 などは Java など数字始まりやハイフンを含むキーが使えない言語向けのプロパティです
+                      降水確率<br>
                     </div>
                     <table cellpadding="0" cellspacing="0" width="100%" class="tableline">
                       <tr>
@@ -329,19 +370,19 @@
                         <th class="title" width="98%">内容</th>
                       </tr>
                       <tr>
-                        <th class="thline">00-06 / T00_06</th>
+                        <th class="thline">T00_06</th>
                         <td class="tdline">0 時から 6 時までの降水確率</td>
                       </tr>
                       <tr>
-                        <th class="thline">06-12 / T06_12</th>
+                        <th class="thline">T06_12</th>
                         <td class="tdline">6 時から 12 時までの降水確率</td>
                       </tr>
                       <tr>
-                        <th class="thline">12-18 / T12_18</th>
+                        <th class="thline">T12_18</th>
                         <td class="tdline">12 時から 18 時までの降水確率</td>
                       </tr>
                       <tr>
-                        <th class="thline">18-24 / T18_24</th>
+                        <th class="thline">T18_24</th>
                         <td class="tdline">18 時から 24 時までの降水確率</td>
                       </tr>
                     </table>
@@ -351,6 +392,9 @@
                 <tr>
                   <th class="thline">image</th>
                   <td class="tdline">
+                    <div style="margin-bottom: 12px;">
+                      天気アイコン<br>
+                    </div>
                     <table cellpadding="0" cellspacing="0" width="100%" class="tableline">
                       <tr>
                         <th class="title" nowrap>プロパティ名</th>
@@ -362,7 +406,7 @@
                       </tr>
                       <tr>
                         <th class="thline">url</th>
-                        <td class="tdline">天気アイコンの URL</td>
+                        <td class="tdline">天気アイコンの URL（SVG 画像）</td>
                       </tr>
                       <tr>
                         <th class="thline">width</th>
@@ -392,12 +436,16 @@
                   <td class="tdline">地方名（例・九州）</td>
                 </tr>
                 <tr>
-                  <th class="thline">pref</th>
+                  <th class="thline">prefecture</th>
                   <td class="tdline">都道府県名（例・福岡県）</td>
                 </tr>
                 <tr>
+                  <th class="thline"><u>district</u></th>
+                  <td class="tdline">一次細分区域名（例・北九州地方）</td>
+                </tr>
+                <tr>
                   <th class="thline">city</th>
-                  <td class="tdline">一次細分区名（例・八幡）</td>
+                  <td class="tdline">気象観測所名（例・八幡）</td>
                 </tr>
               </table>
             </td>
@@ -420,7 +468,7 @@
                 </tr>
                 <tr>
                   <th class="thline">image</th>
-                  <td class="tdline">天気予報 API（livedoor 天気互換）への URL 、アイコンなど</td>
+                  <td class="tdline">天気予報 API（livedoor 天気互換）のアイコン</td>
                 </tr>
                 <tr>
                   <th class="thline">provider</th>
@@ -443,124 +491,140 @@
         <p class="mb-4">livedoor 天気の API では ASCII の範囲外の文字はすべてエスケープされていましたが、この API ではエスケープは行いません。</p>
 
         <pre>{
-  "publicTime": "2020-09-06T05:00:00+09:00",
-  "publicTime_format": "2020/09/06 05:00:00",
-  "title": "福岡県 久留米 の天気",
-  "link": "https://www.jma.go.jp/jp/yoho/346.html",
-  "description": {
-      "text": "福岡県では、強風や高波、竜巻などの激しい突風、急な強い雨、落雷に注意してください。\n\n福岡県は、台風第10号の影響により、概ね曇りとなっています。\n\n6日は、台風第10号の影響により曇りで昼過ぎから雨となり、夜は雷を伴い激しく降るでしょう。また、高温が予想されるため、熱中症など健康管理に注意してください。\n\n7日は、台風第10号の影響により概ね雨となり、雷を伴い非常に激しく降る所がありますが、次第に曇りとなるでしょう。\n\n<天気変化等の留意点>\n筑後地方では、6日6時から7日6時までに予想する降水量は、多い所で1時間に60ミリ、24時間に180ミリの見込みです。",
-      "publicTime": "2020-09-06T04:43:00+09:00",
-      "publicTime_format": "2020/09/06 04:43:00"
-  },
-  "forecasts": [
-      {
-          "date": "2020-09-06",
-          "dateLabel": "今日",
-          "telop": "曇のち雨",
-          "temperature": {
-              "min": null,
-              "max": {
-                  "celsius": "31",
-                  "fahrenheit": "87.8"
-              }
-          },
-          "chanceOfRain": {
-              "00-06": "--%",
-              "06-12": "20%",
-              "12-18": "80%",
-              "18-24": "80%",
-              "T00_06": "--%",
-              "T06_12": "20%",
-              "T12_18": "80%",
-              "T18_24": "80%"
-          },
-          "image": {
-              "title": "曇のち雨",
-              "url": "{{ url('/') }}/icon/13.gif",
-              "width": 50,
-              "height": 31
-          }
-      },
-      {
-          "date": "2020-09-07",
-          "dateLabel": "明日",
-          "telop": "暴風雨",
-          "temperature": {
-              "min": {
-                  "celsius": "25",
-                  "fahrenheit": "77"
-              },
-              "max": {
-                  "celsius": "30",
-                  "fahrenheit": "86"
-              }
-          },
-          "chanceOfRain": {
-              "00-06": "90%",
-              "06-12": "90%",
-              "12-18": "60%",
-              "18-24": "20%",
-              "T00_06": "90%",
-              "T06_12": "90%",
-              "T12_18": "60%",
-              "T18_24": "20%"
-          },
-          "image": {
-              "title": "暴風雨",
-              "url": "{{ url('/') }}/icon/22.gif",
-              "width": 50,
-              "height": 31
-          }
-      },
-      {
-          "date": "2020-09-08",
-          "dateLabel": "明後日",
-          "telop": null,
-          "temperature": {
-              "min": null,
-              "max": null
-          },
-          "chanceOfRain": {
-              "00-06": "--%",
-              "06-12": "--%",
-              "12-18": "--%",
-              "18-24": "--%",
-              "T00_06": "--%",
-              "T06_12": "--%",
-              "T12_18": "--%",
-              "T18_24": "--%"
-          },
-          "image": {
-              "title": null,
-              "url": null,
-              "width": 50,
-              "height": 31
-          }
-      }
-  ],
-  "location": {
-      "city": "久留米",
-      "area": "九州",
-      "prefecture": "福岡県"
-  },
-  "copyright": {
-      "link": "{{ url('/') }}/",
-      "title": "(C) 天気予報 API（livedoor 天気互換）",
-      "image": {
-          "width": 120,
-          "height": 120,
-          "link": "{{ url('/') }}/",
-          "url": "{{ url('/') }}/logo.png",
-          "title": "天気予報 API（livedoor 天気互換）"
-      },
-      "provider": [
-          {
-              "link": "https://www.jma.go.jp/jma/",
-              "name": "気象庁 Japan Meteorological Agency",
-              "note": "気象庁 HP にて公開されている天気予報を json データへ編集しています。"
-          }
-      ]
-  }
+    "publicTime": "2021-03-03T05:00:00+09:00",
+    "formattedPublicTime": "2021/03/03 05:00:00",
+    "publishingOffice": "福岡管区気象台",
+    "title": "福岡県 久留米 の天気",
+    "link": "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=400000",
+    "description": {
+        "publicTime": "2021-03-03T04:43:00+09:00",
+        "formattedPublicTime": "2021/03/03 04:43:00",
+        "headlineText": "福岡、北九州地方では、３日夕方まで高波に注意してください。福岡県では、４日まで空気の乾燥した状態が続くため、火の取り扱いに注意してください。",
+        "bodyText": "　福岡県は、寒気の影響により曇りとなっている所がありますが、高気圧に覆われて概ね晴れています。\n\n　３日は、寒気の影響によりはじめ曇りとなる所がありますが、高気圧に覆われて概ね晴れとなるでしょう。\n\n　４日は、高気圧に覆われて晴れとなる所もありますが、気圧の谷や湿った空気の影響により概ね曇りで、夜遅くは雨となるでしょう。",
+        "text": "福岡、北九州地方では、３日夕方まで高波に注意してください。福岡県では、４日まで空気の乾燥した状態が続くため、火の取り扱いに注意してください。\n\n　福岡県は、寒気の影響により曇りとなっている所がありますが、高気圧に覆われて概ね晴れています。\n\n　３日は、寒気の影響によりはじめ曇りとなる所がありますが、高気圧に覆われて概ね晴れとなるでしょう。\n\n　４日は、高気圧に覆われて晴れとなる所もありますが、気圧の谷や湿った空気の影響により概ね曇りで、夜遅くは雨となるでしょう。"
+    },
+    "forecasts": [
+        {
+            "date": "2021-03-03",
+            "dateLabel": "今日",
+            "telop": "晴れ",
+            "detail": {
+                "weather": "晴れ",
+                "wind": "北の風",
+                "wave": "０．５メートル"
+            },
+            "temperature": {
+                "min": {
+                    "celsius": null,
+                    "fahrenheit": null
+                },
+                "max": {
+                    "celsius": "14",
+                    "fahrenheit": "57.2"
+                }
+            },
+            "chanceOfRain": {
+                "T00_06": "--%",
+                "T06_12": "0%",
+                "T12_18": "0%",
+                "T18_24": "0%"
+            },
+            "image": {
+                "title": "晴れ",
+                "url": "https://www.jma.go.jp/bosai/forecast/img/100.svg",
+                "width": 80,
+                "height": 60
+            }
+        },
+        {
+            "date": "2021-03-04",
+            "dateLabel": "明日",
+            "telop": "曇のち一時雨",
+            "detail": {
+                "weather": "くもり　時々　晴れ　夜遅く　雨",
+                "wind": "北の風　後　北東の風",
+                "wave": "０．５メートル"
+            },
+            "temperature": {
+                "min": {
+                    "celsius": "4",
+                    "fahrenheit": "39.2"
+                },
+                "max": {
+                    "celsius": "18",
+                    "fahrenheit": "64.4"
+                }
+            },
+            "chanceOfRain": {
+                "T00_06": "10%",
+                "T06_12": "10%",
+                "T12_18": "20%",
+                "T18_24": "60%"
+            },
+            "image": {
+                "title": "曇のち一時雨",
+                "url": "https://www.jma.go.jp/bosai/forecast/img/212.svg",
+                "width": 80,
+                "height": 60
+            }
+        },
+        {
+            "date": "2021-03-05",
+            "dateLabel": "明後日",
+            "telop": "雨のち曇",
+            "detail": {
+                "weather": null,
+                "wind": null,
+                "wave": null
+            },
+            "temperature": {
+                "min": {
+                    "celsius": "10",
+                    "fahrenheit": "50"
+                },
+                "max": {
+                    "celsius": "20",
+                    "fahrenheit": "68"
+                }
+            },
+            "chanceOfRain": {
+                "T00_06": "70%",
+                "T06_12": "70%",
+                "T12_18": "70%",
+                "T18_24": "70%"
+            },
+            "image": {
+                "title": "雨のち曇",
+                "url": "https://www.jma.go.jp/bosai/forecast/img/313.svg",
+                "width": 80,
+                "height": 60
+            }
+        }
+    ],
+    "location": {
+        "area": "九州",
+        "prefecture": "福岡県",
+        "district": "筑後地方",
+        "city": "久留米"
+    },
+    "copyright": {
+        "title": "(C) 天気予報 API（livedoor 天気互換）",
+        "link": "{{ url('/') }}/",
+        "image": {
+            "title": "天気予報 API（livedoor 天気互換）",
+            "link": "{{ url('/') }}/",
+            "url": "{{ url('/') }}/logo.png",
+            "width": 120,
+            "height": 120
+        },
+        "provider": [
+            {
+                "link": "https://www.jma.go.jp/jma/",
+                "name": "気象庁 Japan Meteorological Agency",
+                "note": "気象庁 HP にて配信されている天気予報を json データへ編集しています。"
+            }
+        ]
+    }
 }</pre>
 
       </div>
