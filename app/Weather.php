@@ -30,9 +30,9 @@ class Weather extends Model
             return ['error' => 'The specified city ID is invalid.'];
         }
 
-        // 地域ID / 地域名（〇〇地方）
+        // 地域ID / 一時細分区域名
         $city_id = (string) $id;
-        $city_point_name = WeatherDefinition::Areas['class10s'][$city_id]['name'];
+        $district_name = WeatherDefinition::Areas['class10s'][$city_id]['name'];
 
         // 地域 ID から配列のインデックスを抽出
         $city_index = intval(substr($city_id, 4, 1)) - 1;
@@ -99,8 +99,8 @@ class Weather extends Model
             $city_weekly_index = 0;
         }
 
-        // 地域名を取得
-        // livedoor天気では観測地点の名前が使われており、それに合わせるため気象データの方から取得している
+        // 地域名（気象観測所名）を取得
+        // livedoor天気では気象観測所の名前が地域名として使われており、それに合わせるため気象データの方から取得している
         $city_name = $forecast_data[0]['timeSeries'][2]['areas'][$city_amedas_index]['area']['name'];
 
 
@@ -123,6 +123,7 @@ class Weather extends Model
         $forecast_json = [
             'publicTime' => $forecast_data[0]['reportDatetime'],
             'formattedPublicTime' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
+            'publishingOffice' => $forecast_data[0]['publishingOffice'],
             'title' => "{$prefecture_name} {$city_name} の天気",
             'link' => "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code={$prefecture_id}",
             'description' => [
@@ -231,19 +232,20 @@ class Weather extends Model
                 ]
             ],
             'location' => [
-                'city' => $city_name,
                 'area' => $area_name,
                 'prefecture' => $prefecture_name,
+                'district' => $district_name,
+                'city' => $city_name,
             ],
             'copyright' => [
-                'link' => "{$url}/",
                 'title' => "(C) 天気予報 API（livedoor 天気互換）",
+                'link' => "{$url}/",
                 'image' => [
-                    'width' => 120,
-                    'height' => 120,
+                    'title' => "天気予報 API（livedoor 天気互換）",
                     'link' => "{$url}/",
                     'url' => "{$url}/logo.png",
-                    'title' => "天気予報 API（livedoor 天気互換）",
+                    'width' => 120,
+                    'height' => 120,
                 ],
                 'provider' => [
                     [
