@@ -131,6 +131,11 @@ class Weather extends Model
                     'date' => $forecast[0]['date'],
                     'dateLabel' => "今日",
                     'telop' => $forecast[0]['telop'],
+                    'detail' => [
+                        'weather' => $forecast[0]['detail']['weather'],
+                        'wind' => $forecast[0]['detail']['wind'],
+                        'wave' => $forecast[0]['detail']['wave'],
+                    ],
                     'temperature' => [
                         'min' => [
                             'celsius' => $temperature[0]['min']['celsius'],
@@ -158,6 +163,11 @@ class Weather extends Model
                     'date' => $forecast[1]['date'],
                     'dateLabel' => "明日",
                     'telop' => $forecast[1]['telop'],
+                    'detail' => [
+                        'weather' => $forecast[1]['detail']['weather'],
+                        'wind' => $forecast[1]['detail']['wind'],
+                        'wave' => $forecast[1]['detail']['wave'],
+                    ],
                     'temperature' => [
                         'min' => [
                             'celsius' => $temperature[1]['min']['celsius'],
@@ -185,6 +195,11 @@ class Weather extends Model
                     'date' => $forecast[2]['date'],
                     'dateLabel' => "明後日",
                     'telop' => $forecast[2]['telop'],
+                    'detail' => [
+                        'weather' => $forecast[2]['detail']['weather'],
+                        'wind' => $forecast[2]['detail']['wind'],
+                        'wave' => $forecast[2]['detail']['wave'],
+                    ],
                     'temperature' => [
                         'min' => [
                             'celsius' => $temperature[2]['min']['celsius'],
@@ -276,7 +291,6 @@ class Weather extends Model
 
     /**
      * 取得した生の気象データから、今日・明日・明後日の天気予報・気温・降水確率を取得する
-     * もうちょっと綺麗にかけたよなってのが正直な感想だけど動いてるのでこのまま
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_index 取得する地域の配列のインデックス
@@ -320,11 +334,33 @@ class Weather extends Model
             // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
             $weathercodes = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weatherCodes'];
             $weathercode = ($forecast_index[$day_index] !== null ? $weathercodes[$forecast_index[$day_index]] : null);
-            
+
+            // 詳細な天気情報
+            $weathers = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weathers'];
+            $weather = ($forecast_index[$day_index] !== null ? $weathers[$forecast_index[$day_index]] : null);
+
+            // 風の強さ
+            $winds = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['winds'];
+            $wind = ($forecast_index[$day_index] !== null ? $winds[$forecast_index[$day_index]] : null);
+
+            // 波の高さ
+            // 海沿いの地域以外では存在しない
+            if (isset($forecast_data[0]['timeSeries'][0]['areas'][$city_index]['waves'])) {
+                $waves = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['waves'];
+                $wave = ($forecast_index[$day_index] !== null ? $waves[$forecast_index[$day_index]] : null);
+            } else {
+                $wave = null;
+            }
+
             // データを入れる
             $forecast[$day_index] = [
                 'date' => $day_datetime->format('Y-m-d'),
                 'telop' => ($weathercode !== null ? WeatherDefinition::Telops[$weathercode][3]: null),
+                'detail' => [
+                    'weather' => $weather,
+                    'wind' => $wind,
+                    'wave' => $wave,
+                ],
                 'image' => [
                     // テロップと共通
                     'title' => ($weathercode !== null ? WeatherDefinition::Telops[$weathercode][3]: null),
@@ -343,13 +379,13 @@ class Weather extends Model
 
                 // 週間天気予報の時刻
                 $weekly_datetime = $days_datetime[$forecast_key];
-    
+
                 // 週間天気予報から目当ての日付を見つけ、インデックスを手に入れる
                 foreach ($forecast_data[1]['timeSeries'][0]['timeDefines'] as $key => $value) {
-    
+
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
-    
+
                     // 同じ時刻ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
@@ -363,11 +399,16 @@ class Weather extends Model
                     // 天気コード
                     // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
                     $weathercode = $forecast_data[1]['timeSeries'][0]['areas'][$city_weekly_index]['weatherCodes'][$weekly_index];
-            
+
                     // データを入れる
                     $forecast[$day_index] = [
                         'date' => $days_datetime[$forecast_key]->format('Y-m-d'),
                         'telop' => WeatherDefinition::Telops[$weathercode][3],
+                        'detail' => [  // 週間天気予報では以下の情報は取得できない
+                            'weather' => null,
+                            'wind' => null,
+                            'wave' => null,
+                        ],
                         'image' => [
                             // テロップと共通
                             'title' => WeatherDefinition::Telops[$weathercode][3],
@@ -455,7 +496,7 @@ class Weather extends Model
                 ]
             ];
         }
-                    
+
         // 今日の最低気温は常に存在しないのが正しいらしい🤔ので弾く
         // ダミーの最低気温が入っているとき、最低気温は最高気温と同じ値かそれ以上になるのを利用する（ HP 上では - になってる）
         // いっそ API に今日の最低気温を含めないでくれ…って気持ち
@@ -473,13 +514,13 @@ class Weather extends Model
 
                 // 週間天気予報の時刻
                 $weekly_datetime = $days_datetime[$temperature_key];
-    
+
                 // 週間天気予報から目当ての日付を見つけ、インデックスを手に入れる
                 foreach ($forecast_data[1]['timeSeries'][1]['timeDefines'] as $key => $value) {
-    
+
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
-    
+
                     // 同じ時刻ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
@@ -493,7 +534,7 @@ class Weather extends Model
                     // 最高気温・最低気温
                     $weekly_tempmin = $forecast_data[1]['timeSeries'][1]['areas'][$city_weekly_index]['tempsMin'][$weekly_index];
                     $weekly_tempmax = $forecast_data[1]['timeSeries'][1]['areas'][$city_weekly_index]['tempsMax'][$weekly_index];
-        
+
                     // データを入れる
                     $temperature[$temperature_key] = [
                         'min' => [
@@ -510,7 +551,7 @@ class Weather extends Model
         }
 
         clock()->debug($temperature);
-        
+
         return $temperature;
     }
 
@@ -604,13 +645,13 @@ class Weather extends Model
 
                 // 週間天気予報の時刻
                 $weekly_datetime = $days_datetime[$chanceofrain_key];
-    
+
                 // 週間天気予報から目当ての日付を見つけ、インデックスを手に入れる
                 foreach ($forecast_data[1]['timeSeries'][0]['timeDefines'] as $key => $value) {
-    
+
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
-    
+
                     // 同じ時刻ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
@@ -624,11 +665,11 @@ class Weather extends Model
                     // 降水確率
                     // 週間天気予報だと時間ごとの詳細な降水確率は取得できないので、全て同じ値に設定する
                     $weekly_chanceofrain = $forecast_data[1]['timeSeries'][0]['areas'][$city_weekly_index]['pops'][$weekly_index];
-                    
+
                     // 降水確率が空でなければ
                     // 最初の要素の降水確率は '' になるらしい
                     if ($weekly_chanceofrain !== '') {
-        
+
                         // データを入れる
                         $chanceofrain[$chanceofrain_key] = [
                             'T00_06' => $weekly_chanceofrain.'%',
