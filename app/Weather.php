@@ -110,6 +110,9 @@ class Weather extends Model
         // 最高気温・最低気温
         $temperature = Weather::getTemperature($forecast_data, $city_amedas_index, $city_week_index);
 
+        // 降水確率
+        $chanceofrain = Weather::getChanceOfRain($forecast_data, $city_index, $city_week_index);
+
 
         /**** 出力する JSON データ ****/
 
@@ -139,14 +142,10 @@ class Weather extends Model
                         ]
                     ],
                     'chanceOfRain' => [
-                        '00-06' => '--%',
-                        '06-12' => '--%',
-                        '12-18' => '--%',
-                        '18-24' => '--%',
-                        'T00_06' => '--%',
-                        'T06_12' => '--%',
-                        'T12_18' => '--%',
-                        'T18_24' => '--%',
+                        'T00_06' => $chanceofrain[0]['T00_06'],
+                        'T06_12' => $chanceofrain[0]['T06_12'],
+                        'T12_18' => $chanceofrain[0]['T12_18'],
+                        'T18_24' => $chanceofrain[0]['T18_24'],
                     ],
                     'image' => [
                         'title' => $forecast[0]['image']['title'],
@@ -170,14 +169,10 @@ class Weather extends Model
                         ]
                     ],
                     'chanceOfRain' => [
-                        '00-06' => '--%',
-                        '06-12' => '--%',
-                        '12-18' => '--%',
-                        '18-24' => '--%',
-                        'T00_06' => '--%',
-                        'T06_12' => '--%',
-                        'T12_18' => '--%',
-                        'T18_24' => '--%',
+                        'T00_06' => $chanceofrain[1]['T00_06'],
+                        'T06_12' => $chanceofrain[1]['T06_12'],
+                        'T12_18' => $chanceofrain[1]['T12_18'],
+                        'T18_24' => $chanceofrain[1]['T18_24'],
                     ],
                     'image' => [
                         'title' => $forecast[1]['image']['title'],
@@ -201,14 +196,10 @@ class Weather extends Model
                         ]
                     ],
                     'chanceOfRain' => [
-                        '00-06' => '--%',
-                        '06-12' => '--%',
-                        '12-18' => '--%',
-                        '18-24' => '--%',
-                        'T00_06' => '--%',
-                        'T06_12' => '--%',
-                        'T12_18' => '--%',
-                        'T18_24' => '--%',
+                        'T00_06' => $chanceofrain[2]['T00_06'],
+                        'T06_12' => $chanceofrain[2]['T06_12'],
+                        'T12_18' => $chanceofrain[2]['T12_18'],
+                        'T18_24' => $chanceofrain[2]['T18_24'],
                     ],
                     'image' => [
                         'title' => $forecast[2]['image']['title'],
@@ -285,6 +276,7 @@ class Weather extends Model
 
     /**
      * 取得した生の気象データから、今日・明日・明後日の天気予報・気温・降水確率を取得する
+     * もうちょっと綺麗にかけたよなってのが正直な感想だけど動いてるのでこのまま
      *
      * @param array $forecast_data API から取得した気象データ
      * @param int $city_index 取得する地域の配列のインデックス
@@ -381,19 +373,18 @@ class Weather extends Model
     {
         $temperature = [];
 
-        // TODO: 現在の方法だとあまりにもバグが出るので、もう timeDefines に指定時刻が存在するかでやった方が早い気がする
-        // 指定時刻が存在しなかったら null にしておいたり、後で週間天気予報から持ってきたりする
-
         $days_datetime = [
             (new DateTimeImmutable('now')),  // 現在の時刻
             (new DateTimeImmutable('now'))->modify('+1 days'),  // 明日の時刻
             (new DateTimeImmutable('now'))->modify('+2 days'),  // 明後日の時刻
         ];
 
+        // 今日・明日・明後日の最高気温/最低気温が載っている配列のインデックスを格納
         $temperature_index_min = [null, null, null];
         $temperature_index_max = [null, null, null];
 
-        // 最高気温・最低気温の中から今日・明日・明後日の日付を見つけ、インデックスを手に入れる
+        // timeDefines の中から今日・明日・明後日の日付を見つけ、インデックスを手に入れる
+        // 見つからなかったら既定値の null になる
         foreach ($forecast_data[0]['timeSeries'][2]['timeDefines'] as $timedefine_index => $timedefine) {
 
             // 比較対象（処理対象）の時刻
@@ -497,5 +488,88 @@ class Weather extends Model
         clock()->debug($temperature);
         
         return $temperature;
+    }
+
+
+    /**
+     * 取得した生の気象データから、今日・明日・明後日の降水確率を取得する
+     *
+     * @param array $forecast_data API から取得した気象データ
+     * @param int $city_index 取得する地域の配列のインデックス
+     * @param int $city_week_index 取得する地域の配列のインデックス（週間天気予報用）
+     * @return array 整形された気象データ
+     */
+    private static function getChanceOfRain(array $forecast_data, int $city_index, int $city_week_index): array
+    {
+        $chanceofrain = [];
+
+        $days_datetime = [
+            (new DateTimeImmutable('now')),  // 現在の時刻
+            (new DateTimeImmutable('now'))->modify('+1 days'),  // 明日の時刻
+            (new DateTimeImmutable('now'))->modify('+2 days'),  // 明後日の時刻
+        ];
+
+        // 今日・明日・明後日の降水確率が載っている配列のインデックスを格納
+        $chanceofrain_index = [
+            'T00_06' => [null, null, null],
+            'T06_12' => [null, null, null],
+            'T12_18' => [null, null, null],
+            'T18_24' => [null, null, null],
+        ];
+
+        // timeDefines の中から今日・明日・明後日の日付を見つけ、インデックスを手に入れる
+        // 最高気温/最低気温同様、降水確率は今日分明日分しかないし今日分ｎ降水確率も過去のは存在しないのでこうせざるを得ない
+        // 見つからなかったら既定値の null になる
+        foreach ($forecast_data[0]['timeSeries'][1]['timeDefines'] as $timedefine_index => $timedefine) {
+
+            // 比較対象（処理対象）の時刻
+            $compare_datetime = new DateTimeImmutable($timedefine);
+
+            foreach ($days_datetime as $day_index => $day_datetime) {
+
+                // 00時～06時の降水確率
+                if ($compare_datetime == $day_datetime->setTime(0,0)) {
+                    $chanceofrain_index['T00_06'][$day_index] = $timedefine_index;
+                    break;
+                }
+
+                // 06時～12時の降水確率
+                if ($compare_datetime == $day_datetime->setTime(6,0)) {
+                    $chanceofrain_index['T06_12'][$day_index] = $timedefine_index;
+                    break;
+                }
+
+                // 12時～18時の降水確率
+                if ($compare_datetime == $day_datetime->setTime(12,0)) {
+                    $chanceofrain_index['T12_18'][$day_index] = $timedefine_index;
+                    break;
+                }
+
+                // 18時～24時の降水確率
+                if ($compare_datetime == $day_datetime->setTime(18,0)) {
+                    $chanceofrain_index['T18_24'][$day_index] = $timedefine_index;
+                    break;
+                }
+            }
+        }
+
+        // インデックスを手に入れたので、インデックスが null でなければアクセスしてデータを取りに行く
+        foreach ($days_datetime as $day_index => $day_datetime) {
+
+            // ネスト長過ぎる
+            $pops = $forecast_data[0]['timeSeries'][1]['areas'][$city_index]['pops'];
+
+            // データを入れる
+            $chanceofrain[$day_index] = [
+                'T00_06' => ($chanceofrain_index['T00_06'][$day_index] !== null ? $pops[$chanceofrain_index['T00_06'][$day_index]].'%' : '--%'),
+                'T06_12' => ($chanceofrain_index['T06_12'][$day_index] !== null ? $pops[$chanceofrain_index['T06_12'][$day_index]].'%' : '--%'),
+                'T12_18' => ($chanceofrain_index['T12_18'][$day_index] !== null ? $pops[$chanceofrain_index['T12_18'][$day_index]].'%' : '--%'),
+                'T18_24' => ($chanceofrain_index['T18_24'][$day_index] !== null ? $pops[$chanceofrain_index['T18_24'][$day_index]].'%' : '--%'),
+            ];
+        }
+
+        clock()->debug($chanceofrain);
+
+        return $chanceofrain;
     }
 }
