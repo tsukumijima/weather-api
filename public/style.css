@@ -117,6 +117,7 @@ h2.card-header {
 @media (min-width: 768px) {
     .navbar-expand-md .navbar-toggler {
         display: block;
+        order: 1;
     }
     .navbar-expand-md .navbar-collapse {
         display: block !important;
