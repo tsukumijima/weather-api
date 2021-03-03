@@ -117,11 +117,11 @@
         </p>
 
         <p>
-          この API は、<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> から配信されている全国各地の天気予報を取得し、終了した livedoor 天気 の API と互換性のある JSON 形式のデータで提供するものです。URL を差し替えるだけで極力既存のコードをいじることなく利用できるようにしているつもりですが、<span class="text-danger font-weight-bold">livedoor 天気の API からの変更点や注意点もあります。</span>利用される際は下記の <a href="#changes-notes">変更点・注意事項</a> をよく読んだ上でご利用ください。<br>
+          この API は、<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> から配信されている全国各地の天気予報を取得し、終了した livedoor 天気 の API と互換性のある JSON 形式のデータで提供するものです。URL を差し替えるだけで極力既存のコードを変えることなく利用できるようにしているつもりですが、<span class="text-danger font-weight-bold">livedoor 天気の API からの変更点や注意点もあります。</span>利用される際は下記の <a href="#changes-notes">変更点・注意事項</a> をよく読んだ上でご利用ください。<br>
         </p>
 
         <p class="mb-0">
-          <span class="font-weight-bold"><span class="text-info">気象庁 HP のリニューアルに対応しました。</span>また、API レスポンスを活用して 気象台名・見出し/本文のみの天気概況文・天気詳細・一時細分区域名 のプロパティを新たに追加し、より利用しやすくなりました。</span><br>
+          <span class="font-weight-bold"><span class="text-info">気象庁 HP のリニューアルに対応しました。</span>また、気象庁 HP の API を活用して 気象台名・見出し/本文のみの天気概況文・天気詳細・一時細分区域名 のプロパティを新たに追加し、より利用しやすくなりました。</span><br>
           気象データの取得処理が事実上すべて書き直しになった関係で、細かな挙動やこの API で追加されたプロパティが変更・統一されています（livedoor 天気との互換性は保っているはず）。詳細は下記の <a href="#changes-notes">変更点・注意事項</a> や <a href="#response-field">レスポンスフィールド</a> をご参照ください。<br>
         </p>
 
