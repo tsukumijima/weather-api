@@ -11,8 +11,8 @@
 
   <!-- OGP -->
   <meta property="og:type" content="article">
-  <meta property="description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の json データで返す API です。livedoor 天気 API の代替として利用できます。">
-  <meta property="og:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の json データで返す API です。livedoor 天気 API の代替として利用できます。">
+  <meta property="description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
+  <meta property="og:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta property="og:title" content="天気予報 API（livedoor 天気互換）">
   <meta property="og:image" content="{{ url('/') }}/logo.png">
   <meta property="og:locale" content="ja_JP">
@@ -20,7 +20,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の json データで返す API です。livedoor 天気 API の代替として利用できます。">
+  <meta name="twitter:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta name="twitter:title" content="天気予報 API（livedoor 天気互換）">
   <meta name="twitter:image" content="{{ url('/') }}/logo.png">
   <!-- /Twitter Card -->
@@ -108,7 +108,7 @@
       <h2 class="card-header font-weight-bold"><i class="fas fa-info-circle"></i>About</h2>
       <div class="card-body p-sm-4">
 
-        <p>天気予報 API（livedoor 天気互換）は、気象庁が配信している全国各地の今日・明日・あさっての天気予報・予想気温と都道府県の天気概況情報を json データで提供しています。</p>
+        <p>天気予報 API（livedoor 天気互換）は、気象庁が配信している全国各地の今日・明日・明後日の天気予報・天気詳細・予想気温・降水確率と都道府県の天気概況情報を JSON データで提供しています。</p>
 
         <p>
           去る 2020 年 7 月、<a href="https://help.livedoor.com/weather/index.html" target="_blank">livedoor 天気がサービス終了となりました。</a>livedoor 天気の API はわかりやすく、認証も不要でとても利用しやすかったのですが、突然の終了となりとても残念です。<br>
@@ -117,12 +117,12 @@
         </p>
 
         <p>
-          この API は、<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> から配信されている全国各地の天気予報を取得し、終了した livedoor 天気 の API と互換性のある json 形式のデータで提供するものです。URL を差し替えるだけで極力既存のコードをいじることなく利用できるようにしているつもりですが、<span class="text-danger font-weight-bold">livedoor 天気の API からの変更点や注意点もあります。</span>利用される際は下記の 変更点・注意事項 をよく読んだ上でご利用ください。<br>
+          この API は、<a href="https://www.jma.go.jp/jma/index.html" target="_blank">気象庁</a> から配信されている全国各地の天気予報を取得し、終了した livedoor 天気 の API と互換性のある JSON 形式のデータで提供するものです。URL を差し替えるだけで極力既存のコードをいじることなく利用できるようにしているつもりですが、<span class="text-danger font-weight-bold">livedoor 天気の API からの変更点や注意点もあります。</span>利用される際は下記の <a href="#changes-notes">変更点・注意事項</a> をよく読んだ上でご利用ください。<br>
         </p>
 
         <p class="mb-0">
-          <span class="text-danger font-weight-bold"><u>気象庁 HP のリニューアルに対応しました。</u> また、気象台名、天気詳細、見出し/本文のみの天気概況文、一時細分区域名のプロパティを新たに追加しました。</span>
-          <span class="text-danger">気象データ取得が API 化されたことで細かい挙動が変更になっていますが、ドキュメントの方の更新が終わっていません。レスポンスデータは livedoor 天気にて用意されていたプロパティに関しては互換を保っていますが、あらかじめご了承ください。</span><br>
+          <span class="font-weight-bold"><span class="text-info">気象庁 HP のリニューアルに対応しました。</span>また、API レスポンスを活用して 気象台名・見出し/本文のみの天気概況文・天気詳細・一時細分区域名 のプロパティを新たに追加し、より利用しやすくなりました。</span><br>
+          気象データの取得処理が事実上すべて書き直しになった関係で、細かな挙動やこの API で追加されたプロパティが変更・統一されています（livedoor 天気との互換性は保っているはず）。詳細は下記の <a href="#changes-notes">変更点・注意事項</a> や <a href="#response-field">レスポンスフィールド</a> をご参照ください。<br>
         </p>
 
       </div>
@@ -131,41 +131,81 @@
 
   <div id="changes-notes" class="container mt-4 px-2 px-lg-3">
     <div class="card">
-      <h2 class="card-header font-weight-bold"><i class="fas fa-exclamation-circle"></i>変更点・注意事項（情報が古くなっています）</h2>
+      <h2 class="card-header font-weight-bold"><i class="fas fa-exclamation-circle"></i>変更点・注意事項</h2>
       <div class="card-body p-sm-4">
 
         <ul class="mb-0">
-          <li>天気予報は気象庁 HP の公に公開されていない API から取得しているため、<span class="text-danger">もし API レスポンスに予期しないデータが入っていた場合や API レスポンスの構造が変更された場合などに、500 エラーで取得できなくなる可能性があります。</span></li>
+          <li>天気予報は気象庁 HP の公に公開されていない API から取得しているため、<span class="text-danger">レスポンスに予期しないデータが入っていた場合や API のデータ構造が変更された場合などに、500 エラーで取得できなくなる可能性があります。</span></li>
           <ul>
-            <li>気象庁 HP の API は仕様の継続性や運用状況のお知らせが保証されていません。</li>
+            <li>気象庁 HP の API は仕様の継続性や運用状況のお知らせが保証されていません（<a href="https://twitter.com/e_toyoda/status/1364504338572410885" target="_blank">参考</a>）。</li>
             <li>万全は期しているつもりですが、アクセスする時間によってデータが変わるため、修正できていない不具合があるかもしれません。</li>
             <li>サービスの利用は無料ですが、この API を利用したことで何らかの不具合が発生しても責任は負えません。自己責任にてお願いします。</li>
-            <li>このため、<u>天気を「確実に」取得する必要がある用途での利用は推奨しません。</u>有料サービスなども検討してください。</li>
+            <li>このため、<u>天気アプリなどの天気を「確実に」取得する必要がある用途での利用は推奨しません。</u> 有料サービスなども検討してください。</li>
           </ul>
           <li>API は HTTP 接続と HTTPS 接続両方に対応していますが、<span class="text-info">できるだけ HTTPS でアクセスすることを推奨します</span>（証明書云々など HTTPS 接続が難しい環境向けに一応残しています）。</li>
-          <li>ピンポイント予報の発表地点を表す pinpointLocations は気象庁 HP からは取得できないため、廃止としました。</li>
-          <li>link はリクエストされたデータの地域に該当する気象庁 HP 天気予報のデータ取得元 URL を返すようになりました。</li>
+          <li>ピンポイント予報の発表地点を表す pinpointLocations は気象庁 HP の API からは取得できないため、廃止としました。</li>
+          <li>link はリクエストされたデータの地域に該当する気象庁 HP の天気予報の URL を返すようになりました。</li>
           <li>copyright 内の項目は現状に合わせて変更しています。provider は気象庁としていますが、非公式です。</li>
           <ul>
-            <li>API のレスポンス内 ( copyright → provider → note ) に JSON データへ編集している旨を明記しています。</li>
+            <li>API のレスポンス内 ( copyright => provider => note ) に JSON データへ編集している旨を明記しています。</li>
           </ul>
-          <li>気象庁から配信されているデータの関係上、<span class="text-danger">今日の最低気温は取得できません</span>（ null になります）</li>
+          <li><span class="text-info">明後日の降水確率や気温など、3日間天気予報から取得できなかった情報は週間天気予報から取得します。</span></li>
           <ul>
-            <li>17時発表の予報では今日の最高気温も取得できないようです。最高気温・最低気温は取得できない場合も考慮して実装してください。</li>
+            <li>週間天気予報を発表している観測所は離島がある場合を除いて各都道府県ごとに一つのため、週間天気予報の観測が行われていない地点の ID が指定された場合、同じ都道府県内の週間天気予報を発表している観測所から代わりにデータを取得します。</li>
+            <li>奄美地方 (ID: 460040) のように県庁所在地でないにも関わらず週間天気予報の観測が行われている場合は、ID で指定された方の観測所からデータを取得します。</li>
+            <li>以前は週間天気予報からのデータ取得を行っていなかったため、特に明後日の天気では null になるプロパティが目立っていましたが、これにより天気詳細（0時～5時の明後日分）・予想気温（今日終了分）・降水確率（今日終了分）以外のプロパティでは常にデータが返されるようになります。</li>
           </ul>
-          <li>日付が変わってから今日分の天気が配信されるまでの0時～5時の間は、<span class="text-info">気象庁 HP で明日分として配信されている天気を今日の天気、明後日分として配信されている天気を明日の天気として扱います。</span></li>
-          <li>forecasts → image は気象庁 HP にてホストされている各天気アイコンの URL を返します。</li>
+          <li><span class="text-danger">気象庁から配信されているデータの関係上、今日の最低気温は取得できません（ null になります）。</span></li>
           <ul>
-            <li>以前は livedoor 天気からサルベージした天気アイコンを使用していましたが、気象庁側で定義されている天気の種類があまりにも多く livedoor 天気に存在したアイコンだけでは表現しきれないため、気象庁 HP に存在するアイコン（SVG 画像）へ変更しました。</li>
-            <li>SVG 画像はベクター形式のため、API クライアントによっては別途対応が必要かもしれません。</li>
+            <li>17時発表の予報では今日の最高気温も取得できないようです。今日の予想気温は取得できない場合も考慮して実装してください。</li>
+            <li>明後日の予想気温は常に週間天気予報から取得します。明日の予想気温も、0時～5時の間は週間天気予報から取得します。</li>
+            <li>以前の最高気温/最低気温が取得できなかった際に max/min の要素ごと null になる挙動は削除され、celsius・fahrenheit	それぞれの要素に null が設定されるようになりました。</li>
           </ul>
-          <li>formattedPublicTime と description → formattedPublicTime を追加しました。ISO8601 形式の publicTime を 年/月/日 時間:分:秒 の形で取得できます。
-          </li>
+          <li>日付が変わってから今日分の天気が配信されるまでの0時～5時の間は、<span class="text-info">気象庁 HP の API で明日分として配信されている天気を今日の天気、明後日分として配信されている天気を明日の天気として返します。</span></li>
+          <ul>
+            <li>0時～5時の間、明後日の天気は週間天気予報から取得します。</li>
+          </ul>
+          <li>forecasts => image は気象庁 HP にてホストされている各天気アイコンの URL を返します。</li>
+          <ul>
+            <li>以前は livedoor 天気からサルベージした天気アイコンを使用していましたが、気象庁側で定義されている天気の種類があまりにも多く livedoor 天気の天気アイコンだけでは表現しきれないため、気象庁 HP の天気アイコン（SVG 画像）へ変更しました。</li>
+            <li>SVG はベクター形式の画像のため、API クライアントによっては別途対応が必要かもしれません。</li>
+            <li>これにより、天気アイコンの画像サイズも 50 × 31 から 80 × 60 へ変更になっています。</li>
+          </ul>
+          <li><span class="text-info">publicTimeFormatted と description => publicTimeFormatted を追加しました。publicTime を 年/月/日 時間:分:秒 の形式で取得できます。</span></li>
+          <ul>
+            <li>以前は publicTime_format というプロパティ名でしたが、API 全体での命名規則（lowerCamelCase）に合わせました。</li>
+          </ul>
+          <li><span class="text-info">publishingOffice を追加しました。予報を発表した気象台（例・福岡管区気象台）を取得できます。</span></li>
+          <li><span class="text-info">description => headlineText・description => bodyText を追加しました。見出し/本文のみの天気概況文を取得できます。</span></li>
+          <ul>
+            <li>description => headlineText は見出しのみの天気概況文です。</li>
+            <li>description => bodyText は本文のみの天気概況文です。</li>
+            <li>description => text は今まで通り見出しと本文の両方を含んだ天気概況文です。</li>
+          </ul>
+          <li><span class="text-info">天気詳細を表す detail を追加しました。詳細な天気情報・風の強さ・波の高さを取得できます。</span></li>
+          <ul>
+            <li>週間天気予報に存在しないデータのため、0時～5時の間、明後日の天気詳細はいずれのプロパティも null になります。</li>
+            <li>波の高さ (detail => wave) は海に面している地域のみです。海に面していない地域では null になります。</li>
+          </ul>
           <li><span class="text-info">降水確率を表す chanceOfRain を追加しました。今日と明日の 0時～6時・6時～12時・12時～18時・18時～24時 の降水確率を取得できます。</span></li>
           <ul>
-            <li>明後日分は週間天気予報から取得します。</li>
-            <li>今日分の降水確率のうち、過ぎた分（例・12時にアクセスしたときの0時～6時の降水確率）は --% と表示されます。</li>
+            <li>プロパティ名は T00_06（00時～06時）・T06_12（06時～12時）・T12_18（12時～18時）・T18_24（18時～24時）へ統一しました。</li>
+            <li>今日分の降水確率のうち、過ぎた分（例・12時に API にアクセスしたときの0時～6時の降水確率）は --% になります。</li>
+            <li>明後日の降水確率は常に週間天気予報から取得します。明日の降水確率も、0時～5時の間は週間天気予報から取得します。</li>
+            <li>週間天気予報から取得する場合は時間帯ごとの降水確率のデータが週間天気予報にないため、すべての時間帯で同じ降水確率になります。</li>
           </ul>
+          <li><span class="text-info">location => district を追加しました。「八幡」のような地域名に加え、「北九州地方」のような一次細分区域名を取得できます。</span></li>
+          <li>API の CORS (Access-Control-Allow-Origin) は許可しているので、JavaScript でブラウザ側からこの API を利用することも可能だと思います。</li>
+          <ul>
+            <li>ただし、前述した通り天気を確実に取得する必要のある用途での利用は推奨しません。天気ウィジェットなど、動かなくても問題がない程度のものにとどめておくのが無難だと思います。</li>
+          </ul>
+          <li>テストアプリや開発用途以外で利用される場合は独自のユーザーエージェント（例・WeatherApp/1.0.0）を設定してください。</li>
+          <ul>
+            <li>どのアプリケーションからどれくらいアクセスがあるかをサーバーログで把握するためです。</li>
+            <li>あまり強いサーバーではないので、API に連続してアクセスする場合は最低でも 0.5 秒以上間隔を空けてから行ってください。</li>
+            <li>短時間に連続してアクセスした場合、この API だけでなく気象庁 HP にも負荷をかけてしまうことになるため、絶対にやめてください。</li>
+          </ul>
+          <li>この API はできる限り維持するつもりですが、サーバーの負荷が高くなったり気象庁 HP の API 構造が大幅に変更された場合など、やむを得ず終了する可能性があります。あらかじめご了承ください。</li>
           <li>コードは <a href="https://github.com/tsukumijima/weather-api" target="_blank">GitHub</a> にて公開しています。なにか不具合があれば <a href="https://github.com/tsukumijima/weather-api/issues" target="_blank">Issues</a> へお願いします。</li>
           <ul>
             <li>未検証ですが、自分のサイトでこの API をホストすることも可能です。</li>
@@ -238,12 +278,12 @@
             <td class="tdline">予報の発表日時（ ISO8601 形式 / 例・2020-09-01T05:00:00+09:00 ）</td>
           </tr>
           <tr>
-            <th class="thline"><u>formattedPublicTime</u></th>
+            <th class="thline"><u>publicTimeFormatted</u></th>
             <td class="tdline">予報の発表日時（例・2020/09/01 05:00:00 ）</td>
           </tr>
           <tr>
             <th class="thline"><u>publishingOffice</u></th>
-            <td class="tdline">予報を発表した気象台の名前（例・福岡管区気象台）</td>
+            <td class="tdline">予報を発表した気象台（例・福岡管区気象台）</td>
           </tr>
           <tr>
             <th class="thline">title</th>
@@ -267,7 +307,7 @@
                   <td class="tdline">天気概況文の発表時刻（ ISO8601 形式 / 例・2020-09-01T04:52:00+09:00 ）</td>
                 </tr>
                 <tr>
-                  <th class="thline"><u>formattedPublicTime</u></th>
+                  <th class="thline"><u>publicTimeFormatted</u></th>
                   <td class="tdline">天気概況文の発表時刻（例・2020/09/01 04:52:00 ）</td>
                 </tr>
                 <tr>
@@ -329,7 +369,7 @@
                       </tr>
                       <tr>
                         <th class="thline">wave</th>
-                        <td class="tdline">波の高さ（海沿いの地域のみ）</td>
+                        <td class="tdline">波の高さ（海に面している地域のみ）</td>
                       </tr>
                     </table>
                   </td>
@@ -446,7 +486,7 @@
                 </tr>
                 <tr>
                   <th class="thline">city</th>
-                  <td class="tdline">気象観測所名（例・八幡）</td>
+                  <td class="tdline">地域名（気象観測所名）（例・八幡）</td>
                 </tr>
               </table>
             </td>
@@ -493,13 +533,13 @@
 
         <pre>{
     "publicTime": "2021-03-03T05:00:00+09:00",
-    "formattedPublicTime": "2021/03/03 05:00:00",
+    "publicTimeFormatted": "2021/03/03 05:00:00",
     "publishingOffice": "福岡管区気象台",
     "title": "福岡県 久留米 の天気",
     "link": "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=400000",
     "description": {
         "publicTime": "2021-03-03T04:43:00+09:00",
-        "formattedPublicTime": "2021/03/03 04:43:00",
+        "publicTimeFormatted": "2021/03/03 04:43:00",
         "headlineText": "福岡、北九州地方では、３日夕方まで高波に注意してください。福岡県では、４日まで空気の乾燥した状態が続くため、火の取り扱いに注意してください。",
         "bodyText": "　福岡県は、寒気の影響により曇りとなっている所がありますが、高気圧に覆われて概ね晴れています。\n\n　３日は、寒気の影響によりはじめ曇りとなる所がありますが、高気圧に覆われて概ね晴れとなるでしょう。\n\n　４日は、高気圧に覆われて晴れとなる所もありますが、気圧の谷や湿った空気の影響により概ね曇りで、夜遅くは雨となるでしょう。",
         "text": "福岡、北九州地方では、３日夕方まで高波に注意してください。福岡県では、４日まで空気の乾燥した状態が続くため、火の取り扱いに注意してください。\n\n　福岡県は、寒気の影響により曇りとなっている所がありますが、高気圧に覆われて概ね晴れています。\n\n　３日は、寒気の影響によりはじめ曇りとなる所がありますが、高気圧に覆われて概ね晴れとなるでしょう。\n\n　４日は、高気圧に覆われて晴れとなる所もありますが、気圧の谷や湿った空気の影響により概ね曇りで、夜遅くは雨となるでしょう。"
@@ -622,7 +662,7 @@
             {
                 "link": "https://www.jma.go.jp/jma/",
                 "name": "気象庁 Japan Meteorological Agency",
-                "note": "気象庁 HP にて配信されている天気予報を json データへ編集しています。"
+                "note": "気象庁 HP にて配信されている天気予報を JSON データへ編集しています。"
             }
         ]
     }

@@ -122,13 +122,13 @@ class Weather extends Model
 
         $forecast_json = [
             'publicTime' => $forecast_data[0]['reportDatetime'],
-            'formattedPublicTime' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
+            'publicTimeFormatted' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
             'publishingOffice' => $forecast_data[0]['publishingOffice'],
             'title' => "{$prefecture_name} {$city_name} の天気",
             'link' => 'https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=' . ($city_id === '460040' ? '460040' : $prefecture_id),
             'description' => [
                 'publicTime' => $overview['reportDatetime'],
-                'formattedPublicTime' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s'),
+                'publicTimeFormatted' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s'),
                 'headlineText' => $overview['headlineText'],
                 'bodyText' => $overview['text'],
                 'text' => "{$overview['headlineText']}\n\n{$overview['text']}",
