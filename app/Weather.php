@@ -125,7 +125,7 @@ class Weather extends Model
             'formattedPublicTime' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
             'publishingOffice' => $forecast_data[0]['publishingOffice'],
             'title' => "{$prefecture_name} {$city_name} の天気",
-            'link' => "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code={$prefecture_id}",
+            'link' => 'https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=' . ($city_id === '460040' ? '460040' : $prefecture_id),
             'description' => [
                 'publicTime' => $overview['reportDatetime'],
                 'formattedPublicTime' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s'),
@@ -251,7 +251,7 @@ class Weather extends Model
                     [
                         'link' => "https://www.jma.go.jp/jma/",
                         'name' => "気象庁 Japan Meteorological Agency",
-                        'note' => "気象庁 HP にて配信されている天気予報を json データへ編集しています。",
+                        'note' => "気象庁 HP にて配信されている天気予報を JSON データへ編集しています。",
                     ]
                 ]
             ]
