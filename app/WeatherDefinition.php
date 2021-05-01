@@ -18947,19 +18947,20 @@ class WeatherDefinition extends Model
             ]
         ],
         '014100' => [
-            [
-                'class10' => '014010',
-                'amedas' => [
-                    '18273'
-                ],
-                'class20' => '0122300'
-            ],
+            // magic
             [
                 'class10' => '014020',
                 'amedas' => [
                     '19432'
                 ],
                 'class20' => '0120601'
+            ],
+            [
+                'class10' => '014010',
+                'amedas' => [
+                    '18273'
+                ],
+                'class20' => '0122300'
             ],
             // magic
             [

@@ -45,18 +45,23 @@ class Weather extends Model
         // 地方名（九州、東北 など）
         $area_name = Weather::getAreaName($prefecture_id);
 
-        // 帯広地方と奄美地方は測候所という気象台の下部施設が気象情報を発表しているため、
-        // 帯広地方：014030・奄美地方：460040 のように一見普通の地域 ID のように見えるが、気象庁 HP 上は独立した都道府県/地方の扱いになっている
+        // 十勝地方と奄美地方は測候所という気象台の下部施設が気象情報を発表しているため、
+        // 十勝地方：014030・奄美地方：460040 のように一見普通の地域 ID のように見えるが、気象庁 HP 上は独立した都道府県/地方の扱いになっている
         // 一方 API では 014100・460100 のように同じ都道府県扱いのため、気象庁 HP へのリンクに使う ID だけ別個書き換える必要がある
+        // また、根室(014010)と釧路(014020)はなぜか API 上のレスポンスが反対になっていて天気も反対に取得されてしまうため、これも別個書き換える
+        $prefecture_url_id = $prefecture_id;
         switch ($city_id) {
+            case '014010':
+                $city_index = 1;
+                break;
+            case '014020':
+                $city_index = 0;
+                break;
             case '014030':
                 $prefecture_url_id = '014030';
                 break;
             case '460040':
                 $prefecture_url_id = '460040';
-                break;
-            default:
-                $prefecture_url_id = $prefecture_id;
                 break;
         }
 
