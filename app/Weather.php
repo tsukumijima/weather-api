@@ -45,6 +45,21 @@ class Weather extends Model
         // 地方名（九州、東北 など）
         $area_name = Weather::getAreaName($prefecture_id);
 
+        // 帯広地方と奄美地方は測候所という気象台の下部施設が気象情報を発表しているため、
+        // 帯広地方：014030・奄美地方：460040 のように一見普通の地域 ID のように見えるが、気象庁 HP 上は独立した都道府県/地方の扱いになっている
+        // 一方 API では 014100・460100 のように同じ都道府県扱いのため、気象庁 HP へのリンクに使う ID だけ別個書き換える必要がある
+        switch ($city_id) {
+            case '014030':
+                $prefecture_url_id = '014030';
+                break;
+            case '460040':
+                $prefecture_url_id = '460040';
+                break;
+            default:
+                $prefecture_url_id = $prefecture_id;
+                break;
+        }
+
 
         /**** API リクエスト ****/
 
@@ -72,7 +87,7 @@ class Weather extends Model
 
             // 地域のアメダスID
             $city_amedas_id = $amedas_id;
-    
+
             // 地域のアメダスのインデックス
             // なんでもかんでも配列のインデックス探さないといけないの心底つらい
             foreach ($forecast_data[0]['timeSeries'][2]['areas'] as $area_key => $area) {
@@ -125,7 +140,7 @@ class Weather extends Model
             'publicTimeFormatted' => (new DateTimeImmutable($forecast_data[0]['reportDatetime']))->format('Y/m/d H:i:s'),
             'publishingOffice' => $forecast_data[0]['publishingOffice'],
             'title' => "{$prefecture_name} {$city_name} の天気",
-            'link' => 'https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code=' . ($city_id === '460040' ? '460040' : $prefecture_id),
+            'link' => "https://www.jma.go.jp/bosai/forecast/#area_type=offices&area_code={$prefecture_url_id}",
             'description' => [
                 'publicTime' => $overview['reportDatetime'],
                 'publicTimeFormatted' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s'),
@@ -400,7 +415,7 @@ class Weather extends Model
                         break;
                     }
                 }
-   
+
                 // インデックスが定義されている場合だけ
                 if (isset($weekly_index)) {
 
@@ -535,7 +550,7 @@ class Weather extends Model
                         break;
                     }
                 }
-   
+
                 // インデックスが定義されている場合だけ
                 if (isset($weekly_index)) {
 
@@ -666,7 +681,7 @@ class Weather extends Model
                         break;
                     }
                 }
-   
+
                 // インデックスが定義されている場合だけ
                 if (isset($weekly_index)) {
 

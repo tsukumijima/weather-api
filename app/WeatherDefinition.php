@@ -1384,7 +1384,7 @@ class WeatherDefinition extends Model
                     '460010',
                     '460020',
                     '460030',
-                    '460040'
+                    '460040' // magic
                 ]
             ],
             '471000' => [
@@ -1481,7 +1481,8 @@ class WeatherDefinition extends Model
                 'parent' => '010100',
                 'children' => [
                     '014010',
-                    '014020'
+                    '014020',
+                    '014030' // magic
                 ]
             ],
             '015000' => [
@@ -2539,7 +2540,7 @@ class WeatherDefinition extends Model
             '460040' => [
                 'name' => '奄美地方',
                 'enName' => 'Amami Region',
-                'parent' => '460100',
+                'parent' => '460100', // magic
                 'children' => [
                     '460041',
                     '460042',
@@ -2690,7 +2691,7 @@ class WeatherDefinition extends Model
             '014030' => [
                 'name' => '十勝地方',
                 'enName' => 'Tokachi Region',
-                'parent' => '014030',
+                'parent' => '014100', // magic
                 'children' => [
                     '014031',
                     '014032',
@@ -18821,6 +18822,7 @@ class WeatherDefinition extends Model
                 ],
                 'class20' => '4621300'
             ],
+            // magic
             [
                 'class10' => '460040',
                 'amedas' => [
@@ -18958,6 +18960,14 @@ class WeatherDefinition extends Model
                     '19432'
                 ],
                 'class20' => '0120601'
+            ],
+            // magic
+            [
+                'class10' => '014030',
+                'amedas' => [
+                    '20432'
+                ],
+                'class20' => '0120700'
             ]
         ],
         '015000' => [
