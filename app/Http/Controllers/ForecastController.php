@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Weather;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ForecastController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * パスパラメータから取得した city_id に基づく天気予報を取得する
      *
      * @return \Illuminate\Http\Response
      */
@@ -17,11 +18,12 @@ class ForecastController extends Controller
         // 天気予報を取得
         $weather = Weather::getWeather($city_id);
 
-        return json_encode($weather, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+        // 取得した天気予報を JSON で返す
+        return response()->json($weather, Response::HTTP_OK, [], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
     }
 
     /**
-     * Display a listing of the resource.
+     * クエリパラメータから取得した city_id に基づく天気予報を取得する
      *
      * @return \Illuminate\Http\Response
      */
@@ -31,8 +33,9 @@ class ForecastController extends Controller
 
             // 天気予報を取得
             $weather = Weather::getWeather($request->input('city'));
-            
-            return json_encode($weather, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+
+            // 取得した天気予報を JSON で返す
+            return response()->json($weather, Response::HTTP_OK, [], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
 
         } else {
 
