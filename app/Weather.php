@@ -45,10 +45,11 @@ class Weather extends Model
         // 地方名（九州、東北 など）
         $area_name = Weather::getAreaName($prefecture_id);
 
-        // 十勝地方と奄美地方は測候所という気象台の下部施設が気象情報を発表しているため、
-        // 十勝地方：014030・奄美地方：460040 のように一見普通の地域 ID のように見えるが、気象庁 HP 上は独立した都道府県/地方の扱いになっている
-        // 一方 API では 014100・460100 のように同じ都道府県扱いのため、気象庁 HP へのリンクに使う ID だけ別個書き換える必要がある
-        // また、根室(014010)と釧路(014020)はなぜか API 上のレスポンスが反対になっていて天気も反対に取得されてしまうため、これも別個書き換える
+        // 1.十勝地方と奄美地方は測候所という気象台の下部施設が気象情報を発表しているため、
+        //   十勝地方：014030・奄美地方：460040 のように一見普通の地域 ID のように見えるが、気象庁 HP 上は独立した都道府県/地方の扱いになっている
+        //   一方 API では 014100・460100 のように同じ都道府県扱いのため、気象庁 HP へのリンクに使う ID だけ別個書き換える必要がある
+        // 2.また、根室 (014010) と釧路 (014020) はなぜか API レスポンス上の配列の順序が反対で天気も反対に取得されてしまうため、これも別個書き換える
+        //   このコードは area が $city_index の順で並んで返ってくる事を期待して作られているので、そうでなかった場合別の地点の天気を取得してしまう
         $prefecture_url_id = $prefecture_id;
         switch ($city_id) {
             case '014010':
@@ -149,12 +150,16 @@ class Weather extends Model
             'description' => [
                 'publicTime' => $overview['reportDatetime'],
                 'publicTimeFormatted' => (new DateTimeImmutable($overview['reportDatetime']))->format('Y/m/d H:i:s'),
+                // 天気概況の見出し
                 'headlineText' => $overview['headlineText'],
+                // 天気概況の本文
                 'bodyText' => $overview['text'],
-                'text' => "{$overview['headlineText']}\n\n{$overview['text']}",
+                // 見出しが空でなければ見出しと本文を改行で連結し、空であれば本文のみを返す
+                'text' => ($overview['headlineText'] !== '' ? "{$overview['headlineText']}\n\n{$overview['text']}": $overview['text']),
             ],
             'forecasts' => [
                 [
+                    // 今日の天気
                     'date' => $forecast[0]['date'],
                     'dateLabel' => "今日",
                     'telop' => $forecast[0]['telop'],
@@ -187,6 +192,7 @@ class Weather extends Model
                     ]
                 ],
                 [
+                    // 明日の天気
                     'date' => $forecast[1]['date'],
                     'dateLabel' => "明日",
                     'telop' => $forecast[1]['telop'],
@@ -219,6 +225,7 @@ class Weather extends Model
                     ]
                 ],
                 [
+                    // 明後日の天気
                     'date' => $forecast[2]['date'],
                     'dateLabel' => "明後日",
                     'telop' => $forecast[2]['telop'],
