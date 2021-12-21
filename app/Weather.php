@@ -86,7 +86,7 @@ class Weather extends Model
             return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
 
-        // アメダスは鹿児島のように地域に複数存在する場合があり、また新居浜（愛媛県）: 380020 のように
+        // アメダスは鹿児島のように地域に複数存在する場合があり、また愛媛県の新居浜 (380020) のように
         // 0 番目に存在するアメダス ID と実際に運用されているアメダス ID が異なる場合があるため、念のためこっちも回す
         foreach (WeatherDefinition::ForecastArea[$prefecture_id][$city_index]['amedas'] as $amedas_id) {
 
@@ -347,7 +347,7 @@ class Weather extends Model
 
             foreach ($days_datetime as $day_index => $day_datetime) {
 
-                // 同じ時刻ならインデックスを取得して抜ける
+                // 同じ日付ならインデックスを取得して抜ける
                 if ($compare_datetime->setTime(0,0) == $day_datetime->setTime(0,0)) {
                     $forecast_index[$day_index] = $timedefine_index;
                     break;
@@ -359,7 +359,6 @@ class Weather extends Model
         foreach ($days_datetime as $day_index => $day_datetime) {
 
             // 天気コード
-            // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
             $weathercodes = $forecast_data[0]['timeSeries'][0]['areas'][$city_index]['weatherCodes'];
             $weathercode = ($forecast_index[$day_index] !== null ? $weathercodes[$forecast_index[$day_index]] : null);
 
@@ -383,6 +382,7 @@ class Weather extends Model
             // データを入れる
             $forecast[$day_index] = [
                 'date' => $day_datetime->format('Y-m-d'),
+                // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
                 'telop' => ($weathercode !== null ? WeatherDefinition::Telops[$weathercode][3]: null),
                 'detail' => [
                     'weather' => $weather,
@@ -398,7 +398,7 @@ class Weather extends Model
             ];
         }
 
-        // 明後日の天気が 3 日間予報から取得できない場合（多くの場合、0時～5時の期間）は、週間天気予報からデータを持ってくる
+        // 明後日の天気が3日間予報から取得できない場合（多くの場合、0時～5時の間）は、週間天気予報からデータを持ってくる
         // 以下は0時～5時の明後日専用の処理
         foreach ($forecast as $forecast_key => $forecast_value) {
 
@@ -414,7 +414,7 @@ class Weather extends Model
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
 
-                    // 同じ時刻ならインデックスを取得して抜ける
+                    // 同じ日付ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
                         break;
@@ -425,12 +425,12 @@ class Weather extends Model
                 if (isset($weekly_index)) {
 
                     // 天気コード
-                    // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
                     $weathercode = $forecast_data[1]['timeSeries'][0]['areas'][$city_weekly_index]['weatherCodes'][$weekly_index];
 
                     // データを入れる
                     $forecast[$day_index] = [
                         'date' => $days_datetime[$forecast_key]->format('Y-m-d'),
+                        // WeatherDefinition::Telops から天気コードに当てはまるテロップや画像のファイル名を取得する
                         'telop' => WeatherDefinition::Telops[$weathercode][3],
                         'detail' => [  // 週間天気予報では以下の情報は取得できない
                             'weather' => null,
@@ -486,14 +486,14 @@ class Weather extends Model
             foreach ($days_datetime as $day_index => $day_datetime) {
 
                 // 最低気温
-                // 同じ時刻ならインデックスを取得して抜ける
+                // 同じ日付ならインデックスを取得して抜ける
                 if ($compare_datetime == $day_datetime->setTime(0,0)) {
                     $temperature_index_min[$day_index] = $timedefine_index;
                     break;
                 }
 
                 // 最高気温
-                // 同じ時刻ならインデックスを取得して抜ける
+                // 同じ日付ならインデックスを取得して抜ける
                 if ($compare_datetime == $day_datetime->setTime(9,0)) {
                     $temperature_index_max[$day_index] = $timedefine_index;
                     break;
@@ -507,8 +507,8 @@ class Weather extends Model
             // ネスト長過ぎる
             $temps = $forecast_data[0]['timeSeries'][2]['areas'][$city_amedas_index]['temps'];
 
-            // 現在のループのインデックスの気温のインデックスが null じゃなければ取得を実行（ややこしすぎる）
-            // シーケンス制御みたいになってるのが悪い
+            // 現在のループのインデックスの気温のインデックスが null じゃなければ取得を実行（ややこしい）
+            // 目的の情報が取り出しにくすぎる…
             $temperature[$day_index] = [
                 'min' => [
                     'celsius' => ($temperature_index_min[$day_index] !== null ?
@@ -534,7 +534,7 @@ class Weather extends Model
         }
 
         // 明後日の最高気温・最低気温は常に取得できないはずなので、週間天気予報から持ってくる
-        // 明日分も0時～5時は取得できないと思われる
+        // 明日分も0時～5時の間は取得できないと思われる
         foreach ($temperature as $temperature_key => $temperature_value) {
 
             // その日の最高気温・最低気温ともに存在しない
@@ -549,7 +549,7 @@ class Weather extends Model
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
 
-                    // 同じ時刻ならインデックスを取得して抜ける
+                    // 同じ日付ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
                         break;
@@ -662,7 +662,7 @@ class Weather extends Model
         }
 
         // 明後日の降水確率は常に取得できないはずなので、週間天気予報から持ってくる
-        // 明日分も0時～5時は取得できないと思われる
+        // 明日分も0時～5時の間は取得できないと思われる
         foreach ($chanceofrain as $chanceofrain_key => $chanceofrain_value) {
 
             // その日の降水確率がすべて存在しない
@@ -680,7 +680,7 @@ class Weather extends Model
                     // 比較対象の時刻
                     $compare_datetime = new DateTimeImmutable($value);
 
-                    // 同じ時刻ならインデックスを取得して抜ける
+                    // 同じ日付ならインデックスを取得して抜ける
                     if ($compare_datetime->setTime(0,0) == $weekly_datetime->setTime(0,0)) {
                         $weekly_index = $key;
                         break;
