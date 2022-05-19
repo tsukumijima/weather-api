@@ -1,16 +1,23 @@
 
 # weather-api
 
+天気予報 API（livedoor 天気互換）のソースコードです。Laravel 8 で構築されています。
+
 ## Setup
 
-1. .env.example を .env にコピーする
-2. .env を環境に合わせて編集する
-3. プロジェクトのディレクトリ内で `composer install` を実行する
-4. Apache の設定で public/ 以下を公開するよう設定する
-5. アクセスできるか確認する
+以下は Apache + PHP 7.4 + mod_php で動かす際の手順になります。
+
+1. あらかじめ Apache で PHP 7.4 が動く状態にしておく
+2. Laravel に必要な PHP の拡張機能をでインストールする
+   -  Ubuntu なら　`sudo apt install php7.4-bcmath php7.4-curl php7.4-mbstring php7.4-xml php7.4-zip` でインストールできる
+3. .env.example を .env にコピーする
+4. .env を手元の環境に合わせて編集する
+5. プロジェクトのディレクトリ内で `composer install` を実行する
+6. Apache の設定で `public/` 以下をドキュメントルートに設定する
+7. アクセスできるか確認する
 
 ## License
-[MIT License](LICENSE.txt)
+[MIT License](License.txt)
 
 
 ------------------
@@ -19,9 +26,9 @@
 
 <p align="center">
 <a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
 ## About Laravel
@@ -48,35 +55,21 @@ If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Lar
 
 We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
 
+### Premium Partners
+
 - **[Vehikl](https://vehikl.com/)**
 - **[Tighten Co.](https://tighten.co)**
 - **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
 - **[64 Robots](https://64robots.com)**
 - **[Cubet Techno Labs](https://cubettech.com)**
 - **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[British Software Development](https://www.britishsoftware.co)**
+- **[Many](https://www.many.co.uk)**
 - **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
 - **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
+- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
+- **[OP.GG](https://op.gg)**
+- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
+- **[Lendio](https://lendio.com)**
 
 ## Contributing
 
