@@ -111,7 +111,7 @@
         <p>天気予報 API（livedoor 天気互換）は、気象庁が配信している全国各地の今日・明日・明後日の天気予報・天気詳細・予想気温・降水確率と都道府県の天気概況情報を JSON データで提供しています。</p>
 
         <p>
-          去る 2020 年 7 月、<a href="https://help.livedoor.com/weather/index.html" target="_blank">livedoor 天気がサービス終了となりました。</a>livedoor 天気の API はわかりやすく、認証も不要でとても利用しやすかったのですが、突然の終了となりとても残念です。<br>
+          去る2020年7月、<a href="https://help.livedoor.com/weather/index.html" target="_blank">livedoor 天気がサービス終了となりました。</a>livedoor 天気の API はわかりやすく、認証も不要でとても利用しやすかったのですが、突然の終了となりとても残念です。<br>
           代替として使えそうな API を探しましたが、OpenWeatherMap は API キーが必要な上に予報自体が正確でなかったり、気象庁のサイトはそもそも API がなかったりなど livedoor 天気のように手軽に使える API は見つからず、こうして自作することとなりました。<br>
           （気象庁 HP のリニューアルにより現在は各種 API が存在しますが、公に公開されているものではないためドキュメントはなく、またデータが非常に取りづらい構造になっており、手軽に使えるかというと微妙…）<br>
         </p>
@@ -121,7 +121,7 @@
         </p>
 
         <p class="mb-0">
-          <span class="font-weight-bold"><span class="text-info">気象庁 HP のリニューアルに対応しました。</span>また、気象庁 HP の API を活用して 気象台名・見出し/本文のみの天気概況文・天気詳細・一時細分区域名 のプロパティを新たに追加し、より利用しやすくなりました。</span><br>
+          <span class="font-weight-bold"><span class="text-info">2021年2月の気象庁 HP のリニューアルに対応しました。</span>また、気象庁 HP の API を活用して 気象台名・見出し/本文のみの天気概況文・天気詳細・一時細分区域名 のプロパティを新たに追加し、より利用しやすくなりました。</span><br>
           気象データの取得処理が事実上すべて書き直しになった関係で、細かな挙動やこの API で追加されたプロパティが変更・統一されています（livedoor 天気との互換性は保っているはず）。詳細は下記の <a href="#changes-notes">変更点・注意事項</a> や <a href="#response-field">レスポンスフィールド</a> をご参照ください。<br>
         </p>
 
@@ -141,7 +141,7 @@
             <li>万全は期しているつもりですが、アクセスする時間によってデータが変わるため、修正できていない不具合があるかもしれません。</li>
             <li>また、API の不具合などの要因で、正確でない天気予報が取得されてしまう可能性もないわけではありません。</li>
             <li>サービスの利用は無料ですが、この API を利用したことで何らかの不具合が発生しても責任は負えません。自己責任にてお願いします。</li>
-            <li>このため、<u>天気アプリなどの天気を「正確に」「確実に」取得する必要がある用途での利用は推奨しません。</u> 有料サービスなども検討してください。</li>
+            <li>このため、<u>天気アプリなどの天気を「正確に」「確実に」取得する必要がある用途での利用は推奨しません。</u> 有料の API サービスなども検討してください。</li>
           </ul>
           <li>API は HTTP 接続と HTTPS 接続両方に対応していますが、<span class="text-info">できるだけ HTTPS でアクセスすることを推奨します</span>（証明書云々など HTTPS 接続が難しい環境向けに一応残しています）。</li>
           <li>ピンポイント予報の発表地点を表す pinpointLocations は気象庁 HP の API からは取得できないため、廃止としました。</li>
@@ -196,11 +196,11 @@
             <li>週間天気予報から取得する場合は時間帯ごとの降水確率のデータが週間天気予報にないため、すべての時間帯で同じ降水確率になります。</li>
           </ul>
           <li><span class="text-info">location => district を追加しました。「八幡」のような地域名に加え、「北九州地方」のような一次細分区域名を取得できます。</span></li>
-          <li>API の CORS (Access-Control-Allow-Origin) は許可しているので、JavaScript でブラウザ側からこの API を利用することも可能だと思います。</li>
+          <li>API の CORS (Access-Control-Allow-Origin) は許可しているので、ブラウザから JavaScript でこの API を利用することも可能です。</li>
           <ul>
             <li>ただし、前述した通り天気を確実に取得する必要のある用途での利用は推奨しません。天気ウィジェットなど、動かなくても問題がない程度のものにとどめておくのが無難だと思います。</li>
           </ul>
-          <li>テストアプリや開発用途以外で利用される場合は独自のユーザーエージェント（例・WeatherApp/1.0.0）を設定してください。</li>
+          <li>テストアプリや開発用途以外で利用される場合は独自のユーザーエージェント（例・WeatherApp/1.0）を設定してください。</li>
           <ul>
             <li>どのアプリケーションからどれくらいアクセスがあるかをサーバーログで把握するためです。</li>
             <li>あまり強いサーバーではないので、API に連続してアクセスする場合は最低でも 0.5 秒以上間隔を空けてから行ってください。</li>
@@ -227,7 +227,7 @@
             <span style="color:#d00;"><strong>{{ url('/') }}/api/forecast</strong></span><br>
             この URL に下の表のパラメータを加え、実際にリクエストします。
           </p>
-          
+
           <table class="table">
             <tr>
               <th class="title" nowrap>パラメータ名</th>
@@ -241,7 +241,7 @@
               </td>
             </tr>
           </table>
-          
+
           <div class="column d-inline-block px-4 py-3" style="border: 1px solid #dee2e6; width: 100%;">
             <strong>（例）「福岡県・久留米の天気」を取得する場合</strong><br>
             <div>
@@ -268,7 +268,7 @@
           取得した JSON データは以下の定義に基づいて構成されています（プロパティ名は順不同）。<br>
           <u>下線</u> の項目はこの API で新たに追加されたプロパティです。<br>
         </p>
-  
+
         <table class="table mt-4" cellpadding="0" cellspacing="0" class="normal">
           <tr>
             <th class="title" nowrap>プロパティ名</th>
@@ -348,7 +348,7 @@
                   <th class="thline">telop</th>
                   <td class="tdline">天気（晴れ、曇り、雨など）</td>
                 </tr>
-                
+
                 <tr>
                   <th class="thline"><u>detail</u></th>
                   <td class="tdline">
@@ -375,7 +375,7 @@
                     </table>
                   </td>
                 </tr>
-                
+
                 <tr>
                   <th class="thline">temperature</th>
                   <td class="tdline">
@@ -399,7 +399,7 @@
                     </table>
                   </td>
                 </tr>
-                
+
                 <tr>
                   <th class="thline"><u>chanceOfRain</u></th>
                   <td class="tdline">
@@ -529,7 +529,7 @@
     <div class="card">
       <h2 class="card-header font-weight-bold"><i class="fas fa-code"></i>JSON データサンプル</h2>
       <div class="card-body p-sm-4">
-        
+
         <p class="mb-4">livedoor 天気の API では ASCII の範囲外の文字はすべてエスケープされていましたが、この API ではエスケープは行いません。</p>
 
         <pre>{
