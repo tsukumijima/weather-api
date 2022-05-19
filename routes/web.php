@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers as Controllers;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,5 +18,5 @@ Route::get('/', function () {
 });
 
 // Forecast
-Route::get('/api/forecast', 'ForecastController@index_query');
-Route::get('/api/forecast/city/{city_id}', 'ForecastController@index');
+Route::get('/api/forecast', [Controllers\ForecastController::class, 'index_query']);
+Route::get('/api/forecast/city/{city_id}', [Controllers\ForecastController::class, 'index']);
