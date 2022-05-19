@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Root
-Route::get('/', 'IndexController@index');
+Route::get('/', function () {
+    return view('index');
+});
 
 // Forecast
 Route::get('/api/forecast', 'ForecastController@index_query');

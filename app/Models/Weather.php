@@ -1,11 +1,11 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use DateTimeImmutable;
-use App\WeatherDefinition;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
+use App\Models\WeatherDefinition;
 
 class Weather extends Model
 {
@@ -89,6 +89,7 @@ class Weather extends Model
 
         // アメダスは鹿児島のように地域に複数存在する場合があり、また愛媛県の新居浜 (380020) のように
         // 0 番目に存在するアメダス ID と実際に運用されているアメダス ID が異なる場合があるため、念のためこっちも回す
+        $city_amedas_index = 0;
         foreach (WeatherDefinition::ForecastArea[$prefecture_id][$city_index]['amedas'] as $amedas_id) {
 
             // 地域のアメダスID
