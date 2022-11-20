@@ -20,7 +20,7 @@ class Weather extends Model
     {
 
         // サイトの URL を取得
-        $url = url('/');
+        $url = env('APP_URL');
 
 
         /**** 各 ID 定義 ****/
