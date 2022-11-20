@@ -56,6 +56,8 @@ return [
 
     'asset_url' => env('ASSET_URL', null),
 
+    'gtag' => env('APP_GTAG', 'UA-000000000-1'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

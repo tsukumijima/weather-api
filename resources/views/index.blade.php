@@ -7,14 +7,14 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>天気予報 API（livedoor 天気互換）</title>
   <link rel="icon" type="image/png" href="/logo.png">
-  <link rel="canonical" href="{{ env('APP_URL') }}/">
+  <link rel="canonical" href="{{ config('app.url') }}/">
 
   <!-- OGP -->
   <meta property="og:type" content="article">
   <meta property="description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta property="og:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta property="og:title" content="天気予報 API（livedoor 天気互換）">
-  <meta property="og:image" content="{{ env('APP_URL') }}/logo.png">
+  <meta property="og:image" content="{{ config('app.url') }}/logo.png">
   <meta property="og:locale" content="ja_JP">
   <!-- /OGP -->
 
@@ -22,7 +22,7 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta name="twitter:title" content="天気予報 API（livedoor 天気互換）">
-  <meta name="twitter:image" content="{{ env('APP_URL') }}/logo.png">
+  <meta name="twitter:image" content="{{ config('app.url') }}/logo.png">
   <!-- /Twitter Card -->
 
   <!-- JavaScript -->
@@ -35,7 +35,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
 
   <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id={{ env('APP_GTAG') }}"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('app.gtag') }}"></script>
   <script>
 
     window.dataLayer = window.dataLayer || [];
@@ -43,7 +43,7 @@
       dataLayer.push(arguments);
     }
     gtag('js', new Date());
-    gtag('config', '{{ env('APP_GTAG') }}');
+    gtag('config', '{{ config('app.gtag') }}');
 
     $(function(){
       $('a[href^="#"]').click(function(){
@@ -224,7 +224,7 @@
         <div>
           <p>
             JSON データをリクエストする際のベースとなる URL は以下になります。<br>
-            <span style="color:#d00;"><strong>{{ env('APP_URL') }}/api/forecast</strong></span><br>
+            <span style="color:#d00;"><strong>{{ config('app.url') }}/api/forecast</strong></span><br>
             この URL に下の表のパラメータを加え、実際にリクエストします。
           </p>
 
@@ -248,11 +248,11 @@
               下記 URL にアクセスして JSON データを取得します。http:// でのアクセスも可能です。<br>
               基本 URL + 久留米の ID (400040)
             </div>
-            <a href="{{ env('APP_URL') }}/api/forecast/city/400040" target="_blank">{{ env('APP_URL') }}/api/forecast/city/400040</a>
+            <a href="{{ config('app.url') }}/api/forecast/city/400040" target="_blank">{{ config('app.url') }}/api/forecast/city/400040</a>
             <div>
               クエリで取得することもできます。
             </div>
-            <a href="{{ env('APP_URL') }}/api/forecast?city=400040" target="_blank">{{ env('APP_URL') }}/api/forecast?city=400040</a>
+            <a href="{{ config('app.url') }}/api/forecast?city=400040" target="_blank">{{ config('app.url') }}/api/forecast?city=400040</a>
           </div>
         </div>
       </div>
@@ -651,11 +651,11 @@
     },
     "copyright": {
         "title": "(C) 天気予報 API（livedoor 天気互換）",
-        "link": "{{ env('APP_URL') }}/",
+        "link": "{{ config('app.url') }}/",
         "image": {
             "title": "天気予報 API（livedoor 天気互換）",
-            "link": "{{ env('APP_URL') }}/",
-            "url": "{{ env('APP_URL') }}/logo.png",
+            "link": "{{ config('app.url') }}/",
+            "url": "{{ config('app.url') }}/logo.png",
             "width": 120,
             "height": 120
         },
