@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>天気予報 API（livedoor 天気互換）</title>
-  <link rel="icon" type="image/png" href="{{ url('/') }}/logo.png">
+  <link rel="icon" type="image/png" href="/logo.png">
   <link rel="canonical" href="{{ env('APP_URL') }}/">
 
   <!-- OGP -->
@@ -14,7 +14,7 @@
   <meta property="description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta property="og:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta property="og:title" content="天気予報 API（livedoor 天気互換）">
-  <meta property="og:image" content="{{ url('/') }}/logo.png">
+  <meta property="og:image" content="{{ env('APP_URL') }}/logo.png">
   <meta property="og:locale" content="ja_JP">
   <!-- /OGP -->
 
@@ -22,7 +22,7 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:description" content="気象庁が配信している各地の天気予報を livedoor 天気互換の JSON データで返す API です。livedoor 天気 API の代替として利用できます。">
   <meta name="twitter:title" content="天気予報 API（livedoor 天気互換）">
-  <meta name="twitter:image" content="{{ url('/') }}/logo.png">
+  <meta name="twitter:image" content="{{ env('APP_URL') }}/logo.png">
   <!-- /Twitter Card -->
 
   <!-- JavaScript -->
@@ -32,7 +32,7 @@
   <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
   <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.13.1/css/all.css">
-  <link rel="stylesheet" type="text/css" href="{{ url('/') }}/style.css">
+  <link rel="stylesheet" type="text/css" href="/style.css">
 
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id={{ env('APP_GTAG') }}"></script>
@@ -65,7 +65,7 @@
   <nav id="navigation" class="navbar navbar-expand-md navbar-dark bg-info fixed-top">
     <div class="container">
       <a class="navbar-brand text-white" href="./">
-        <img src="{{ url('/') }}/logo.png" class="d-inline-block align-top">
+        <img src="/logo.png" class="d-inline-block align-top">
         天気予報 API（livedoor 天気互換）
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false">
@@ -224,7 +224,7 @@
         <div>
           <p>
             JSON データをリクエストする際のベースとなる URL は以下になります。<br>
-            <span style="color:#d00;"><strong>{{ url('/') }}/api/forecast</strong></span><br>
+            <span style="color:#d00;"><strong>{{ env('APP_URL') }}/api/forecast</strong></span><br>
             この URL に下の表のパラメータを加え、実際にリクエストします。
           </p>
 
@@ -237,7 +237,7 @@
               <th>city</th>
               <td>
                 地域別に定義された ID 番号を表します。<br>
-                リクエストする地域と ID の対応は、livedoor 天気で使われていた <a href="{{ url('/') }}/primary_area.xml" target="_blank">全国の地点定義表</a> 内で<br>「一次細分区域（cityタグ）」の ID をご参照ください。（例・佐賀県 伊万里 = 410020 ）
+                リクエストする地域と ID の対応は、livedoor 天気で使われていた <a href="/primary_area.xml" target="_blank">全国の地点定義表</a> 内で<br>「一次細分区域（cityタグ）」の ID をご参照ください。（例・佐賀県 伊万里 = 410020 ）
               </td>
             </tr>
           </table>
@@ -248,11 +248,11 @@
               下記 URL にアクセスして JSON データを取得します。http:// でのアクセスも可能です。<br>
               基本 URL + 久留米の ID (400040)
             </div>
-            <a href="{{ url('/') }}/api/forecast/city/400040" target="_blank">{{ url('/') }}/api/forecast/city/400040</a>
+            <a href="{{ env('APP_URL') }}/api/forecast/city/400040" target="_blank">{{ env('APP_URL') }}/api/forecast/city/400040</a>
             <div>
               クエリで取得することもできます。
             </div>
-            <a href="{{ url('/') }}/api/forecast?city=400040" target="_blank">{{ url('/') }}/api/forecast?city=400040</a>
+            <a href="{{ env('APP_URL') }}/api/forecast?city=400040" target="_blank">{{ env('APP_URL') }}/api/forecast?city=400040</a>
           </div>
         </div>
       </div>
@@ -651,11 +651,11 @@
     },
     "copyright": {
         "title": "(C) 天気予報 API（livedoor 天気互換）",
-        "link": "{{ url('/') }}/",
+        "link": "{{ env('APP_URL') }}/",
         "image": {
             "title": "天気予報 API（livedoor 天気互換）",
-            "link": "{{ url('/') }}/",
-            "url": "{{ url('/') }}/logo.png",
+            "link": "{{ env('APP_URL') }}/",
+            "url": "{{ env('APP_URL') }}/logo.png",
             "width": 120,
             "height": 120
         },
