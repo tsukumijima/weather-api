@@ -74,13 +74,17 @@ class Weather extends Model
         $jma_api_overview = "https://www.jma.go.jp/bosai/forecast/data/overview_forecast/{$prefecture_id}.json";
 
         // API から気象データを取得
-        $forecast_response = HTTP::withHeaders(['User-Agent' => 'weather-api/1.0'])->get($jma_api_forecast);
+        $forecast_response = HTTP::withHeaders(['User-Agent' => 'weather-api/1.0'])
+                                 ->withOptions(['verify' => false])
+                                 ->get($jma_api_forecast);
         if ($forecast_response->status() === 200) {
             $forecast_data = $forecast_response->json();
         } else {
             return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
-        $overview_response = HTTP::withHeaders(['User-Agent' => 'weather-api/1.0'])->get($jma_api_overview);
+        $overview_response = HTTP::withHeaders(['User-Agent' => 'weather-api/1.0'])
+                                 ->withOptions(['verify' => false])
+                                 ->get($jma_api_overview);
         if ($overview_response->status() === 200){
             $overview = $overview_response->json();
         } else {
