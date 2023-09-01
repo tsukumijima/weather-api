@@ -74,14 +74,14 @@ class Weather extends Model
         $jma_api_overview = "https://www.jma.go.jp/bosai/forecast/data/overview_forecast/{$prefecture_id}.json";
 
         // API から気象データを取得
-        $retry_count = 3;
+        $retry_count = 5;
         while ($retry_count > 0) {
             try {
                 $forecast_response = HTTP::withHeaders(['User-Agent' => 'weather-api/1.0'])
                                          ->withOptions(['verify' => false])
                                          ->get($jma_api_forecast);
                 break;
-            } catch (Illuminate\Http\Client\ConnectionException $e) {
+            } catch (\Throwable $e) {
                 $retry_count--;
                 if ($retry_count === 0) throw $e;  // 3回失敗したら例外を投げる
                 sleep(1);  // 1秒待機
@@ -94,14 +94,14 @@ class Weather extends Model
         }
 
         // API から気象概況を取得
-        $retry_count = 3;
+        $retry_count = 5;
         while ($retry_count > 0) {
             try {
                 $overview_response = HTTP::withHeaders(['User-Agent' => 'weather-api/1.0'])
                                          ->withOptions(['verify' => false])
                                          ->get($jma_api_overview);
                 break;
-            } catch (Illuminate\Http\Client\ConnectionException $e) {
+            } catch (\Throwable $e) {
                 $retry_count--;
                 if ($retry_count === 0) throw $e;  // 3回失敗したら例外を投げる
                 sleep(1);  // 1秒待機
