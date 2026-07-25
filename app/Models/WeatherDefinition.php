@@ -18091,7 +18091,7 @@ class WeatherDefinition extends Model
             [
                 'class10' => '120020',
                 'amedas' => [
-                    '45147'
+                    '45148'
                 ],
                 'class20' => '1220200'
             ],
@@ -18602,7 +18602,7 @@ class WeatherDefinition extends Model
             [
                 'class10' => '390010',
                 'amedas' => [
-                    '74181'
+                    '74182'
                 ],
                 'class20' => '3920100'
             ],
@@ -18792,7 +18792,7 @@ class WeatherDefinition extends Model
             [
                 'class10' => '460040',
                 'amedas' => [
-                    '88836',
+                    '88837',
                     '88971'
                 ],
                 'class20' => '4622200'
@@ -18826,7 +18826,7 @@ class WeatherDefinition extends Model
             [
                 'class10' => '460040',
                 'amedas' => [
-                    '88836',
+                    '88837',
                     '88971'
                 ],
                 'class20' => '4622200'
@@ -19105,8 +19105,8 @@ class WeatherDefinition extends Model
             [
                 'class10' => '050020',
                 'amedas' => [
-                    '32126',
-                    '32596'
+                    '32596',
+                    '32126'
                 ],
                 'class20' => '0521300'
             ]
@@ -19145,7 +19145,7 @@ class WeatherDefinition extends Model
             [
                 'class10' => '070010',
                 'amedas' => [
-                    '36126',
+                    '36127',
                     '36667',
                     '36476'
                 ],

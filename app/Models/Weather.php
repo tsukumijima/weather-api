@@ -34,10 +34,6 @@ class Weather extends Model
         $city_id = (string) $id;
         $district_name = WeatherDefinition::Areas['class10s'][$city_id]['name'];
 
-        // 地域 ID から配列のインデックスを抽出
-        $city_index = intval(substr($city_id, 4, 1)) - 1;
-        if ($city_index < 0) $city_index = 0;  // 大東島など一部の地域用
-
         // 都道府県ID / 都道府県名
         $prefecture_id = (string) WeatherDefinition::Areas['class10s'][$id]['parent'];
         $prefecture_name = WeatherDefinition::Areas['offices'][$prefecture_id]['name'];
@@ -48,16 +44,8 @@ class Weather extends Model
         // 1.十勝地方と奄美地方は測候所という気象台の下部施設が気象情報を発表しているため、
         //   十勝地方：014030・奄美地方：460040 のように一見普通の地域 ID のように見えるが、気象庁 HP 上は独立した都道府県/地方の扱いになっている
         //   一方 API では 014100・460100 のように同じ都道府県扱いのため、気象庁 HP へのリンクに使う ID だけ別個書き換える必要がある
-        // 2.また、根室 (014010) と釧路 (014020) はなぜか API レスポンス上の配列の順序が反対で天気も反対に取得されてしまうため、これも別個書き換える
-        //   このコードは area が $city_index の順で並んで返ってくる事を期待して作られているので、そうでなかった場合別の地点の天気を取得してしまう
         $prefecture_url_id = $prefecture_id;
         switch ($city_id) {
-            case '014010':
-                $city_index = 1;
-                break;
-            case '014020':
-                $city_index = 0;
-                break;
             case '014030':
                 $prefecture_url_id = '014030';
                 break;
@@ -113,28 +101,59 @@ class Weather extends Model
             return ['error' => "Request to JMA API failed (HTTP Error {$forecast_response->status()})"];
         }
 
+        // 気象庁 API の一次細分区域は ID 順に並ぶとは限らないため、地域 ID から実際の配列位置を取得
+        $city_index = null;
+        foreach ($forecast_data[0]['timeSeries'][0]['areas'] as $area_key => $area) {
+            // リクエストされた地域 ID と一致した位置を採用
+            if ($area['area']['code'] === $city_id) {
+                $city_index = $area_key;
+                break;
+            }
+        }
+        // 対応する一次細分区域がない場合は別地域のデータを返さずエラーにする
+        if ($city_index === null) {
+            return ['error' => "Weather area was not found in JMA API response: {$city_id}"];
+        }
+
+        // 気温観測地点の候補も気象庁 API の配列順から独立して地域 ID で取得
+        $forecast_area_index = null;
+        foreach (WeatherDefinition::ForecastArea[$prefecture_id] as $area_key => $forecast_area) {
+            // リクエストされた地域 ID と一致した地点定義を採用
+            if ($forecast_area['class10'] === $city_id) {
+                $forecast_area_index = $area_key;
+                break;
+            }
+        }
+        // 対応する地点定義がない場合は先頭の地域へ暗黙に切り替えずエラーにする
+        if ($forecast_area_index === null) {
+            return ['error' => "Forecast area definition was not found: {$city_id}"];
+        }
+
         // アメダスは鹿児島のように地域に複数存在する場合があり、また愛媛県の新居浜 (380020) のように
-        // 0 番目に存在するアメダス ID と実際に運用されているアメダス ID が異なる場合があるため、念のためこっちも回す
-        $city_amedas_index = 0;
-        foreach (WeatherDefinition::ForecastArea[$prefecture_id][$city_index]['amedas'] as $amedas_id) {
-
-            // 地域のアメダスID
-            $city_amedas_id = $amedas_id;
-
+        // 0番目に存在するアメダス ID と実際に運用されているアメダス ID が異なる場合があるため、念のためこっちも回す
+        $city_amedas_id = null;
+        $city_amedas_index = null;
+        foreach (WeatherDefinition::ForecastArea[$prefecture_id][$forecast_area_index]['amedas'] as $amedas_id) {
             // 地域のアメダスのインデックス
             // なんでもかんでも配列のインデックス探さないといけないの心底つらい
             foreach ($forecast_data[0]['timeSeries'][2]['areas'] as $area_key => $area) {
                 // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
-                if ($area['area']['code'] === $city_amedas_id) {
+                if ($area['area']['code'] === $amedas_id) {
+                    $city_amedas_id = $amedas_id;
                     $city_amedas_index = $area_key;
                     break 2;  // 親ループも抜ける
                 }
             }
         }
+        // 対応する気温観測地点がない場合は都道府県内の別地点を返さずエラーにする
+        if ($city_amedas_index === null) {
+            return ['error' => "Temperature area was not found in JMA API response: {$city_id}"];
+        }
 
         // 地域の週間天気予報用のインデックス
         // ほとんどは県あたりの観測地点は1箇所しかないが、小笠原諸島がある東京、奄美地方のある鹿児島などでは複数存在する
         // なんでもかんでも配列のインデックス探さないといけないの心底つらい
+        $city_weekly_index = null;
         foreach ($forecast_data[1]['timeSeries'][1]['areas'] as $area_key => $area) {
             // アメダス ID と一致したら、そのアメダス ID があるインデックスを取得して終了
             if ($area['area']['code'] === $city_amedas_id) {
@@ -143,7 +162,7 @@ class Weather extends Model
             }
         }
         // 取得できなかった場合（3日間天気でしか観測を行っていない地点）は 0 とし、その都道府県のメインの観測地点を利用する
-        if (!isset($city_weekly_index)) {
+        if ($city_weekly_index === null) {
             $city_weekly_index = 0;
         }
 
