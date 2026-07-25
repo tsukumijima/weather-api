@@ -184,7 +184,7 @@ class WeatherDefinition extends Model
             '112.svg',
             '512.svg',
             '300',
-            '晴午のちは雷雨',
+            '晴午後は雷雨',
             'CLEAR, RAIN AND THUNDER IN THE AFTERNOON'
         ],
         '126' => [
