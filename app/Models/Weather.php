@@ -3,11 +3,9 @@
 namespace App\Models;
 
 use DateTimeImmutable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
-use App\Models\WeatherDefinition;
 
-class Weather extends Model
+final class Weather
 {
 
     /**
@@ -501,8 +499,6 @@ class Weather extends Model
             }
         }
 
-        clock()->debug($forecast);
-
         return $forecast;
     }
 
@@ -630,8 +626,6 @@ class Weather extends Model
                 }
             }
         }
-
-        clock()->debug($temperature);
 
         return $temperature;
     }
@@ -762,8 +756,6 @@ class Weather extends Model
                 }
             }
         }
-
-        clock()->debug($chanceofrain);
 
         return $chanceofrain;
     }

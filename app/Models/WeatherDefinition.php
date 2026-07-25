@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class WeatherDefinition extends Model
+final class WeatherDefinition
 {
 
     // 天気コード対照表
