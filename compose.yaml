@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/development/Dockerfile
+    command:
+      - sh
+      - -c
+      - composer install && php artisan serve --host=0.0.0.0 --port=8000
+    environment:
+      APP_DEBUG: 'true'
+      APP_ENV: local
+      APP_KEY: base64:QwU0WFRm3iIqf4YBycPJhToQcuIgMiWP3SbEWUdjWhA=
+      APP_URL: http://localhost:5100
+      CACHE_STORE: file
+      COMPOSER_HOME: /tmp/composer
+    ports:
+      - '5100:8000'
+    volumes:
+      - .:/app
+      - composer-cache:/tmp/composer
+      - storage-framework:/app/storage/framework
+      - storage-logs:/app/storage/logs
+      - vendor:/app/vendor
+
+volumes:
+  composer-cache:
+  storage-framework:
+  storage-logs:
+  vendor:
